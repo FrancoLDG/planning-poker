@@ -5,394 +5,898 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Planning Poker</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Poppins', sans-serif;
       text-align: center;
       padding: 2rem;
-      background-color: #fdfdfd;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
       color: #333;
+      position: relative;
+      overflow-x: hidden;
     }
-    .hidden { display: none; }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 105, 180, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.2) 0%, transparent 50%);
+      z-index: -1;
+    }
+    .falling-cards {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .falling-card {
+      position: absolute;
+      width: 40px;
+      height: 55px;
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #333;
+      opacity: 0.8;
+    }
+
+    .falling-card::before {
+      content: attr(data-symbol);
+      color: #666;
+    }
+
+    /* Animaciones de cartas cayendo */
+    @keyframes fall1 {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0.8;
+      }
+      70% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translateY(calc(100vh + 100px)) rotate(180deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes fall2 {
+      0% {
+        transform: translateY(-100px) rotate(0deg) scale(0.8);
+        opacity: 0.7;
+      }
+      60% {
+        opacity: 0.5;
+      }
+      100% {
+        transform: translateY(calc(100vh + 100px)) rotate(-160deg) scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    @keyframes fall3 {
+      0% {
+        transform: translateY(-100px) rotate(45deg);
+        opacity: 0.9;
+      }
+      80% {
+        opacity: 0.4;
+      }
+      100% {
+        transform: translateY(calc(100vh + 100px)) rotate(225deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes fall4 {
+      0% {
+        transform: translateY(-100px) rotate(-30deg) scale(1.1);
+        opacity: 0.6;
+      }
+      50% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(calc(100vh + 100px)) rotate(150deg) scale(0.9);
+        opacity: 0;
+      }
+    }
+
+    @keyframes fall5 {
+      0% {
+        transform: translateY(-100px) rotate(90deg);
+        opacity: 0.7;
+      }
+      90% {
+        opacity: 0.3;
+      }
+      100% {
+        transform: translateY(calc(100vh + 100px)) rotate(-90deg);
+        opacity: 0;
+      }
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    h1::after {
+      content: '🎯';
+      position: absolute;
+      top: -10px;
+      right: -60px;
+      font-size: 2rem;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    .hidden { 
+      display: none; 
+    }
+
+    /* Contenedor principal con glassmorphism */
+    #team-selection, #role-selection, #name-input, #poker-area {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 2.5rem;
+      margin: 2rem auto;
+      max-width: 600px;
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      animation: slideIn 0.6s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    p {
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: white;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
 
     button {
-      padding: 1rem 2rem;
+      padding: 1rem 2.5rem;
       font-size: 1.2rem;
+      font-weight: 600;
       border: none;
-      border-radius: 10px;
-      margin: 0.5rem;
+      border-radius: 50px;
+      margin: 0.8rem;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    button:hover::before {
+      left: 100%;
     }
 
     #team-selection button {
-      background-color: #f0f0f0;
-      border: 2px solid #ccc;
-      font-weight: bold;
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+      color: white;
+      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
     }
 
     #team-selection button:hover {
-      background-color: #e0e0e0;
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 15px 35px rgba(255, 107, 107, 0.6);
     }
 
     #role-selection button {
-      background-color: #e3f2fd;
-      color: #0d47a1;
-      font-weight: bold;
+      background: linear-gradient(45deg, #4834d4, #686de0);
+      color: white;
+      box-shadow: 0 8px 25px rgba(72, 52, 212, 0.4);
     }
 
     #role-selection button:hover {
-      background-color: #bbdefb;
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 15px 35px rgba(72, 52, 212, 0.6);
     }
 
     #po-controls button {
-      background-color: #d1c4e9;
+      background: linear-gradient(45deg, #0abde3, #006ba6);
+      color: white;
+      box-shadow: 0 8px 25px rgba(10, 189, 227, 0.4);
+      margin: 0.5rem;
     }
 
     #po-controls button:hover {
-      background-color: #b39ddb;
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 12px 30px rgba(10, 189, 227, 0.6);
     }
 
     input[type="text"] {
-      font-size: 1.1rem;
-      padding: 0.5rem;
-      width: 200px;
-      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      padding: 1rem 1.5rem;
+      width: 300px;
+      margin-bottom: 2rem;
+      border: none;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      box-shadow: 
+        inset 0 2px 10px rgba(0,0,0,0.1),
+        0 0 0 3px rgba(255, 255, 255, 0.3);
+      transform: scale(1.02);
+    }
+
+    #name-input button {
+      background: linear-gradient(45deg, #00d2d3, #54a0ff);
+      color: white;
+      box-shadow: 0 8px 25px rgba(0, 210, 211, 0.4);
+    }
+
+    #name-input button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 15px 35px rgba(0, 210, 211, 0.6);
     }
 
     .card {
       display: inline-block;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 1rem;
-      margin: 0.5rem;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      padding: 1.5rem 1rem;
+      margin: 0.8rem;
       cursor: pointer;
-      width: 60px;
-      height: 80px;
-      font-size: 1.5rem;
-      background-color: #f5f5f5;
-      transition: transform 0.2s ease, background-color 0.2s ease;
+      width: 80px;
+      height: 110px;
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      box-shadow: 
+        0 10px 30px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      color: #333;
     }
+
+    .card::before {
+      content: '♠️';
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      font-size: 0.8rem;
+      opacity: 0.6;
+    }
+
+    .card::after {
+      content: '♠️';
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      font-size: 0.8rem;
+      opacity: 0.6;
+      transform: rotate(180deg);
+    }
+
     .card:hover {
-      transform: scale(1.1);
-      background-color: #eeeeee;
+      transform: translateY(-10px) scale(1.1) rotateZ(5deg);
+      box-shadow: 
+        0 20px 40px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      border-color: rgba(255, 255, 255, 0.6);
     }
+
     .selected {
-      border: 2px solid #007bff;
-      background-color: #cce5ff;
+      border: 3px solid #ff6b6b !important;
+      background: linear-gradient(145deg, #ff6b6b, #ee5a24) !important;
+      color: white !important;
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 
+        0 15px 35px rgba(255, 107, 107, 0.5),
+        inset 0 1px 0 rgba(255,255,255,0.3);
     }
+
     table {
-      margin: 1rem auto;
+      margin: 2rem auto;
       border-collapse: collapse;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      backdrop-filter: blur(10px);
     }
+
     th, td {
-      border: 1px solid #ccc;
-      padding: 0.5rem 1rem;
+      border: none;
+      padding: 1rem 2rem;
+      font-weight: 500;
     }
+
+    th {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    td {
+      background: rgba(255, 255, 255, 0.8);
+      transition: background 0.3s ease;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(240, 240, 240, 0.8);
+    }
+
+    tr:hover td {
+      background: rgba(102, 126, 234, 0.1);
+    }
+
     #result {
-      margin-top: 1rem;
-      font-weight: bold;
-      font-size: 1.4rem;
-      color: #4caf50;
+      margin-top: 2rem;
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: white;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      padding: 1.5rem;
+      background: linear-gradient(45deg, #00d2d3, #54a0ff);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4); }
+      50% { box-shadow: 0 15px 40px rgba(0, 210, 211, 0.6); }
+      100% { box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4); }
     }
 
     #mesa-container {
-      margin: 2rem auto;
-      width: 400px;
-      height: 200px;
-      border: 4px solid #999;
-      border-radius: 50% / 25%;
+      margin: 3rem auto;
+      width: 500px;
+      height: 250px;
+      border: 6px solid rgba(255, 255, 255, 0.4);
+      border-radius: 50% / 40%;
       position: relative;
-      background-color: #f4f4f4;
+      background: linear-gradient(145deg, 
+        rgba(255, 255, 255, 0.2), 
+        rgba(255, 255, 255, 0.05));
+      backdrop-filter: blur(20px);
+      box-shadow: 
+        0 20px 50px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.3);
     }
 
     .persona {
       position: absolute;
       text-align: center;
-      width: 60px;
+      width: 70px;
       transform: translate(-50%, -50%);
+      animation: personaEntrance 0.6s ease-out;
+    }
+
+    @keyframes personaEntrance {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
     }
 
     .persona .icono {
-      width: 40px;
-      height: 40px;
-      background-color: #90caf9;
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(45deg, #ff6b6b, #ffa502);
       border-radius: 50%;
       margin: 0 auto;
+      box-shadow: 
+        0 8px 25px rgba(255, 107, 107, 0.4),
+        inset 0 2px 5px rgba(255,255,255,0.3);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .persona .icono::before {
+      content: '👤';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+    }
+
+    .persona:hover .icono {
+      transform: scale(1.1);
+      box-shadow: 
+        0 12px 35px rgba(255, 107, 107, 0.6),
+        inset 0 2px 5px rgba(255,255,255,0.4);
     }
 
     .persona .nombre {
-      font-size: 0.8rem;
-      margin-top: 0.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      color: white;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.2);
+      padding: 0.3rem 0.8rem;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+    }
+
+    h2, h3 {
+      color: white;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      margin: 1.5rem 0;
+    }
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+
+    #cards {
+      margin: 2rem 0;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem !important;
+      }
+
+      #team-selection, #role-selection, #name-input, #poker-area {
+        padding: 1.2rem !important;
+        margin: 1rem auto !important;
+      }
+
+      h1 {
+        font-size: 2.2rem !important;
+        margin-bottom: 1rem !important;
+      }
+
+      h2 {
+        font-size: 1.5rem !important;
+      }
+
+      h3 {
+        font-size: 1.2rem !important;
+      }
+
+      p {
+        font-size: 1rem !important;
+        margin-bottom: 1rem !important;
+      }
+
+      button {
+        padding: 0.6rem 1.5rem !important;
+        font-size: 1rem !important;
+        margin: 0.4rem !important;
+      }
+
+      input[type="text"] {
+        font-size: 1rem !important;
+        padding: 0.6rem 1rem !important;
+        width: 220px !important;
+        margin-bottom: 1rem !important;
+      }
+
+      .card {
+        width: 60px !important;
+        height: 80px !important;
+        font-size: 1.5rem !important;
+        margin: 0.5rem !important;
+      }
+
+      #mesa-container {
+        width: 350px !important;
+        height: 180px !important;
+        margin: 1.5rem auto !important;
+      }
+
+      #result {
+        font-size: 1.2rem !important;
+        padding: 1rem !important;
+        margin-top: 1rem !important;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Planning Poker</h1>
+  <div id="main-container">
+    <div class="falling-cards" id="falling-cards"></div>
+    <h1>Planning Poker</h1>
 
-  <div id="team-selection">
-    <p style="font-size: 1.5rem; font-weight: bold; color: #37474f;">Seleccioná tu equipo:</p>
-    <button id="btn-desarrollo">Desarrollo</button>
-    <button id="btn-produccion">Producción</button>
-    <button id="btn-otro">Otro</button>
-  </div>
-
-  <div id="role-selection" class="hidden">
-    <p>Elegí tu rol:</p>
-    <button id="btn-po">PO</button>
-    <button id="btn-member">Team Member</button>
-  </div>
-
-  <div id="name-input" class="hidden">
-    <p>Ingresá tu nombre:</p>
-    <input type="text" id="username" placeholder="Tu nombre">
-    <br>
-    <button onclick="confirmName()">Entrar</button>
-  </div>
-
-  <div id="poker-area" class="hidden">
-    <h2 id="welcome"></h2>
-    <div id="cards" class="hidden"></div>
-    <div id="po-controls" class="hidden">
-      <button onclick="revealVotes()">Revelar Votos</button>
-      <button onclick="resetVotes()">Reiniciar Votación</button>
-      <button onclick="resetParticipantes()">Reiniciar Participantes</button>
+    <div id="team-selection">
+      <p>🎯 Seleccioná tu equipo:</p>
+      <button id="btn-desarrollo">🚀 Desarrollo</button>
+      <button id="btn-produccion">⚡ Producción</button>
+      <button id="btn-otro">🎪 Otro</button>
     </div>
-    <h3>Votaciones</h3>
-    <table id="vote-table">
-      <thead><tr><th>Nombre</th><th>Voto</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div id="result" class="hidden"></div>
-    <div id="mesa-container"></div>
-  </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-  import { getDatabase, ref, set, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+    <div id="role-selection" class="hidden">
+      <p>👥 Elegí tu rol:</p>
+      <button id="btn-po">🎪 PO</button>
+      <button id="btn-member">🎯 Team Member</button>
+    </div>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDDnsYIkxDfO3NVu1Wwf1LMPZ_xmHh4Zws",
-    authDomain: "planning-poker-ffc14.firebaseapp.com",
-    databaseURL: "https://planning-poker-ffc14-default-rtdb.firebaseio.com",
-    projectId: "planning-poker-ffc14",
-    storageBucket: "planning-poker-ffc14.appspot.com",
-    messagingSenderId: "835406865593",
-    appId: "1:835406865593:web:1b611dfbf8103ab992e768"
-  };
+    <div id="name-input" class="hidden">
+      <p>✨ Ingresá tu nombre:</p>
+      <input type="text" id="username" placeholder="Tu nombre">
+      <br>
+      <button onclick="confirmName()">🚀 Entrar</button>
+    </div>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+    <div id="poker-area" class="hidden">
+      <h2 id="welcome"></h2>
+      <div id="cards" class="hidden"></div>
+      <div id="po-controls" class="hidden">
+        <button onclick="revealVotes()">🎭 Revelar Votos</button>
+        <button onclick="resetVotes()">🔄 Reiniciar Votación</button>
+        <button onclick="resetParticipantes()">🩹 Reiniciar Participantes</button>
+      </div>
+      <h3>📊 Votaciones</h3>
+      <table id="vote-table">
+        <thead><tr><th>Nombre</th><th>Voto</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div id="result" class="hidden"></div>
+      <div id="mesa-container"></div>
+    </div>
 
-  const fibonacci = [0, 1, 2, 3, 5, 8, 13, 21, 34, '?'];
-  let team = '', name = '', role = '', selectedCard = null, revealed = false, currentVotes = {};
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+      import { getDatabase, ref, set, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
-  document.getElementById('btn-desarrollo').onclick = () => selectTeam('desarrollo');
-  document.getElementById('btn-produccion').onclick = () => selectTeam('produccion');
-  document.getElementById('btn-otro').onclick = () => selectTeam('otro');
-  document.getElementById('btn-po').onclick = () => selectRole('po');
-  document.getElementById('btn-member').onclick = () => selectRole('member');
+      const firebaseConfig = {
+        apiKey: "AIzaSyDDnsYIkxDfO3NVu1Wwf1LMPZ_xmHh4Zws",
+        authDomain: "planning-poker-ffc14.firebaseapp.com",
+        databaseURL: "https://planning-poker-ffc14-default-rtdb.firebaseio.com",
+        projectId: "planning-poker-ffc14",
+        storageBucket: "planning-poker-ffc14.appspot.com",
+        messagingSenderId: "835406865593",
+        appId: "1:835406865593:web:1b611dfbf8103ab992e768"
+      };
 
-  function selectTeam(selectedTeam) {
-    team = selectedTeam;
-    document.getElementById('team-selection').classList.add('hidden');
-    document.getElementById('role-selection').classList.remove('hidden');
-  }
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+        function createFallingCard() {
+        const container = document.getElementById('falling-cards');
+        const card = document.createElement('div');
+        card.className = 'falling-card';
+        
+        // Símbolos de cartas variados
+        const symbols = ['♠', '♥', '♦', '♣', '★', '♤', '♡', '♢'];
+        const numbers = ['A', '2', '3', '5', '8', '13', '21', '?'];
+        
+        // Alternar entre símbolos y números
+        const content = Math.random() > 0.5 ? 
+          symbols[Math.floor(Math.random() * symbols.length)] : 
+          numbers[Math.floor(Math.random() * numbers.length)];
+        
+        card.setAttribute('data-symbol', content);
+        card.textContent = content;
+        
+        // Posición aleatoria horizontal
+        card.style.left = Math.random() * 100 + '%';
+        
+        // Animación aleatoria
+        const animations = ['fall1', 'fall2', 'fall3', 'fall4', 'fall5'];
+        const randomAnimation = animations[Math.floor(Math.random() * animations.length)];
+        
+        // Duración aleatoria entre 8 y 15 segundos
+        const duration = 8 + Math.random() * 7;
+        card.style.animation = `${randomAnimation} ${duration}s linear`;
+        
+        // Delay aleatorio
+        card.style.animationDelay = Math.random() * 2 + 's';
+        
+        container.appendChild(card);
+        
+        // Remover carta después de la animación
+        setTimeout(() => {
+          if (card.parentNode) {
+            card.parentNode.removeChild(card);
+          }
+        }, (duration + 2) * 1000);
+      }
 
-  function selectRole(r) {
-    role = r;
-    document.getElementById('role-selection').classList.add('hidden');
-    document.getElementById('name-input').classList.remove('hidden');
-  }
+      // Crear cartas cayendo continuamente
+      function startFallingCards() {
+        // Crear carta inicial
+        createFallingCard();
+        
+        // Crear nuevas cartas cada 1.5-3 segundos
+        setTimeout(() => {
+          startFallingCards();
+        }, 1500 + Math.random() * 1500);
+      }
 
-  function actualizarConexion() {
-    if (name && team) {
-      set(ref(db, `${team}/connections/${name}`), { lastSeen: Date.now() });
-    }
-  }
+      // Iniciar animación de cartas cayendo
+      startFallingCards();
+      const fibonacci = [0, 1, 2, 3, 5, 8, 13, 21, 34, '?'];
+      let team = '', name = '', role = '', selectedCard = null, revealed = false, currentVotes = {};
 
-  setInterval(() => {
-    actualizarConexion();
-  }, 10000);
+      document.getElementById('btn-desarrollo').onclick = () => selectTeam('desarrollo');
+      document.getElementById('btn-produccion').onclick = () => selectTeam('produccion');
+      document.getElementById('btn-otro').onclick = () => selectTeam('otro');
+      document.getElementById('btn-po').onclick = () => selectRole('po');
+      document.getElementById('btn-member').onclick = () => selectRole('member');
 
-  window.confirmName = function confirmName() {
-    name = document.getElementById('username').value.trim();
-    if (!name) return;
+      function selectTeam(selectedTeam) {
+        team = selectedTeam;
+        document.getElementById('team-selection').classList.add('hidden');
+        document.getElementById('role-selection').classList.remove('hidden');
+      }
 
-    document.getElementById('name-input').classList.add('hidden');
-    document.getElementById('poker-area').classList.remove('hidden');
+      function selectRole(r) {
+        role = r;
+        document.getElementById('role-selection').classList.add('hidden');
+        document.getElementById('name-input').classList.remove('hidden');
+      }
 
-    actualizarConexion();
-    set(ref(db, `${team}/votes/${name}`), '');
-
-    document.getElementById('welcome').innerText = `Hola, ${name} (${role === 'po' ? 'PO' : 'Team Member'})`;
-
-    if (role === 'po') document.getElementById('po-controls').classList.remove('hidden');
-    if (role === 'member') showCards();
-
-    listenForVotes();
-
-    onValue(ref(db, `${team}/connections`), (snapshot) => {
-      const conexiones = snapshot.val() || {};
-      const now = Date.now();
-      const activos = Object.entries(conexiones)
-        .filter(([_, data]) => now - data.lastSeen < 35000)
-        .map(([nombre]) => nombre);
-      renderMesa(activos);
-    });
-  }
-
-  function showCards() {
-    const container = document.getElementById('cards');
-    container.classList.remove('hidden');
-    container.innerHTML = '';
-
-    fibonacci.forEach(val => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerText = val;
-      div.onclick = () => selectCard(val, div);
-      container.appendChild(div);
-    });
-  }
-
-  function selectCard(value, element) {
-    selectedCard = value;
-    document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
-    element.classList.add('selected');
-    set(ref(db, `${team}/votes/${name}`), value);
-  }
-
-  window.revealVotes = function () {
-    set(ref(db, `${team}/meta/revealed`), true);
-  }
-
-  window.resetVotes = function () {
-    const updates = {};
-    Object.keys(currentVotes).forEach(user => {
-      updates[`${team}/votes/${user}`] = '';
-    });
-    update(ref(db), updates);
-    set(ref(db, `${team}/meta/revealed`), false);
-    selectedCard = null;
-    document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
-    document.getElementById('result')?.classList.add('hidden');
-  }
-
-  window.resetParticipantes = function () {
-    get(ref(db, `${team}/connections`)).then(connSnap => {
-      const connections = connSnap.val() || {};
-      const now = Date.now();
-      const activeUsers = {};
-
-      for (const [user, data] of Object.entries(connections)) {
-        if (now - data.lastSeen < 35000) {
-          activeUsers[user] = true;
+      function actualizarConexion() {
+        if (name && team) {
+          set(ref(db, `${team}/connections/${name}`), { lastSeen: Date.now() });
         }
       }
 
-      get(ref(db, `${team}/votes`)).then(votesSnap => {
-        const votes = votesSnap.val() || {};
+      setInterval(() => {
+        actualizarConexion();
+      }, 10000);
+
+      window.confirmName = function confirmName() {
+        name = document.getElementById('username').value.trim();
+        if (!name) return;
+
+        document.getElementById('name-input').classList.add('hidden');
+        document.getElementById('poker-area').classList.remove('hidden');
+
+        actualizarConexion();
+        set(ref(db, `${team}/votes/${name}`), '');
+
+        document.getElementById('welcome').innerText = `🎉 Hola, ${name} (${role === 'po' ? '👑 PO' : '🎯 Team Member'})`;
+
+        if (role === 'po') document.getElementById('po-controls').classList.remove('hidden');
+        if (role === 'member') showCards();
+
+        listenForVotes();
+
+        onValue(ref(db, `${team}/connections`), (snapshot) => {
+          const conexiones = snapshot.val() || {};
+          const now = Date.now();
+          const activos = Object.entries(conexiones)
+            .filter(([_, data]) => now - data.lastSeen < 35000)
+            .map(([nombre]) => nombre);
+          renderMesa(activos);
+        });
+      }
+
+      function showCards() {
+        const container = document.getElementById('cards');
+        container.classList.remove('hidden');
+        container.innerHTML = '';
+
+        fibonacci.forEach(val => {
+          const div = document.createElement('div');
+          div.className = 'card';
+          div.innerText = val;
+          div.onclick = () => selectCard(val, div);
+          container.appendChild(div);
+        });
+      }
+
+      function selectCard(value, element) {
+        selectedCard = value;
+        document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
+        element.classList.add('selected');
+        set(ref(db, `${team}/votes/${name}`), value);
+      }
+
+      window.revealVotes = function () {
+        set(ref(db, `${team}/meta/revealed`), true);
+      }
+
+      window.resetVotes = function () {
         const updates = {};
-
-        for (const user of Object.keys(votes)) {
-          if (!(user in activeUsers)) {
-            updates[`${team}/votes/${user}`] = null;
-          }
-        }
-
-        for (const user of Object.keys(connections)) {
-          if (!(user in activeUsers)) {
-            updates[`${team}/connections/${user}`] = null;
-          }
-        }
-
+        Object.keys(currentVotes).forEach(user => {
+          updates[`${team}/votes/${user}`] = '';
+        });
         update(ref(db), updates);
         set(ref(db, `${team}/meta/revealed`), false);
-      });
-    });
-  }
-
-  function listenForVotes() {
-    onValue(ref(db, `${team}/meta/revealed`), (snapshot) => {
-      revealed = snapshot.val() === true;
-      updateVoteTable(currentVotes);
-    });
-
-    onValue(ref(db, `${team}/votes`), (snapshot) => {
-      const data = snapshot.val() || {};
-      const currentUserCard = data[name];
-      if (!currentUserCard) {
         selectedCard = null;
         document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
+        document.getElementById('result')?.classList.add('hidden');
       }
-      currentVotes = data;
-      updateVoteTable(currentVotes);
-    });
-  }
 
-  function updateVoteTable(votes = {}) {
-    const tbody = document.querySelector('#vote-table tbody');
-    tbody.innerHTML = '';
-    const voteCount = {};
+      window.resetParticipantes = function () {
+        get(ref(db, `${team}/connections`)).then(connSnap => {
+          const connections = connSnap.val() || {};
+          const now = Date.now();
+          const activeUsers = {};
 
-    Object.entries(votes).forEach(([user, card]) => {
-      const tr = document.createElement('tr');
-      const tdName = document.createElement('td');
-      const tdCard = document.createElement('td');
-      tdName.textContent = user;
-      tdCard.textContent = revealed ? card : (card === '' ? '—' : '🂠');
-      tr.appendChild(tdName);
-      tr.appendChild(tdCard);
-      tbody.appendChild(tr);
+          for (const [user, data] of Object.entries(connections)) {
+            if (now - data.lastSeen < 35000) {
+              activeUsers[user] = true;
+            }
+          }
 
-      if (revealed && card !== '') {
-        voteCount[card] = (voteCount[card] || 0) + 1;
+          get(ref(db, `${team}/votes`)).then(votesSnap => {
+            const votes = votesSnap.val() || {};
+            const updates = {};
+
+            for (const user of Object.keys(votes)) {
+              if (!(user in activeUsers)) {
+                updates[`${team}/votes/${user}`] = null;
+              }
+            }
+
+            for (const user of Object.keys(connections)) {
+              if (!(user in activeUsers)) {
+                updates[`${team}/connections/${user}`] = null;
+              }
+            }
+
+            update(ref(db), updates);
+            set(ref(db, `${team}/meta/revealed`), false);
+          });
+        });
       }
-    });
 
-    const resultDiv = document.getElementById('result');
-    if (revealed && Object.keys(voteCount).length > 0) {
-      const sorted = Object.entries(voteCount).sort((a, b) => b[1] - a[1]);
-      const top = sorted[0];
-      resultDiv.textContent = `Puntaje más votado: ${top[0]} (${top[1]} votos)`;
-      resultDiv.classList.remove('hidden');
-    } else {
-      resultDiv.classList.add('hidden');
-    }
-  }
+      function listenForVotes() {
+        onValue(ref(db, `${team}/meta/revealed`), (snapshot) => {
+          revealed = snapshot.val() === true;
+          updateVoteTable(currentVotes);
+        });
 
-  function renderMesa(personas) {
-    const container = document.getElementById('mesa-container');
-    container.innerHTML = '';
-    const radiusX = container.offsetWidth / 2 - 40;
-    const radiusY = container.offsetHeight / 2 - 40;
-    const centerX = container.offsetWidth / 2;
-    const centerY = container.offsetHeight / 2;
+        onValue(ref(db, `${team}/votes`), (snapshot) => {
+          const data = snapshot.val() || {};
+          const currentUserCard = data[name];
+          if (!currentUserCard) {
+            selectedCard = null;
+            document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
+          }
+          currentVotes = data;
+          updateVoteTable(currentVotes);
+        });
+      }
 
-    const total = personas.length;
-    personas.forEach((nombre, i) => {
-      const angle = (2 * Math.PI * i) / total;
-      const x = centerX + radiusX * Math.cos(angle);
-      const y = centerY + radiusY * Math.sin(angle);
+      function updateVoteTable(votes = {}) {
+        const tbody = document.querySelector('#vote-table tbody');
+        tbody.innerHTML = '';
+        const voteCount = {};
 
-      const div = document.createElement('div');
-      div.className = 'persona';
-      div.style.left = `${x}px`;
-      div.style.top = `${y}px`;
+        Object.entries(votes).forEach(([user, card]) => {
+          const tr = document.createElement('tr');
+          const tdName = document.createElement('td');
+          const tdCard = document.createElement('td');
+          tdName.textContent = user;
+          tdCard.textContent = revealed ? card : (card === '' ? '—' : '🂠');
+          tr.appendChild(tdName);
+          tr.appendChild(tdCard);
+          tbody.appendChild(tr);
 
-      const icon = document.createElement('div');
-      icon.className = 'icono';
-      const label = document.createElement('div');
-      label.className = 'nombre';
-      label.textContent = nombre;
+          if (revealed && card !== '') {
+            voteCount[card] = (voteCount[card] || 0) + 1;
+          }
+        });
 
-      div.appendChild(icon);
-      div.appendChild(label);
-      container.appendChild(div);
-    });
-  }
-</script>
+        const resultDiv = document.getElementById('result');
+        if (revealed && Object.keys(voteCount).length > 0) {
+          const sorted = Object.entries(voteCount).sort((a, b) => b[1] - a[1]);
+          const top = sorted[0];
+          resultDiv.textContent = `🎯 Puntaje más votado: ${top[0]} (${top[1]} votos)`;
+          resultDiv.classList.remove('hidden');
+        } else {
+          resultDiv.classList.add('hidden');
+        }
+      }
 
+      function renderMesa(personas) {
+        const container = document.getElementById('mesa-container');
+        container.innerHTML = '';
+        const radiusX = container.offsetWidth / 2 - 40;
+        const radiusY = container.offsetHeight / 2 - 40;
+        const centerX = container.offsetWidth / 2;
+        const centerY = container.offsetHeight / 2;
 
+        const total = personas.length;
+        personas.forEach((nombre, i) => {
+          const angle = (2 * Math.PI * i) / total;
+          const x = centerX + radiusX * Math.cos(angle);
+          const y = centerY + radiusY * Math.sin(angle);
+
+          const div = document.createElement('div');
+          div.className = 'persona';
+          div.style.left = `${x}px`;
+          div.style.top = `${y}px`;
+
+          const icon = document.createElement('div');
+          icon.className = 'icono';
+          const label = document.createElement('div');
+          label.className = 'nombre';
+          label.textContent = nombre;
+
+          div.appendChild(icon);
+          div.appendChild(label);
+          container.appendChild(div);
+        });
+      }
+    </script>
+  </div>
 </body>
 </html>
