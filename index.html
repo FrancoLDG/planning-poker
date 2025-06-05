@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planning Poker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background-color: #fdfdfd;
+      color: #333;
+    }
+    .hidden { display: none; }
+
+    button {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      margin: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #team-selection button {
+      background-color: #f0f0f0;
+      border: 2px solid #ccc;
+      font-weight: bold;
+    }
+
+    #team-selection button:hover {
+      background-color: #e0e0e0;
+    }
+
+    #role-selection button {
+      background-color: #e3f2fd;
+      color: #0d47a1;
+      font-weight: bold;
+    }
+
+    #role-selection button:hover {
+      background-color: #bbdefb;
+    }
+
+    #po-controls button {
+      background-color: #d1c4e9;
+    }
+
+    #po-controls button:hover {
+      background-color: #b39ddb;
+    }
+
+    input[type="text"] {
+      font-size: 1.1rem;
+      padding: 0.5rem;
+      width: 200px;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 0.5rem;
+      cursor: pointer;
+      width: 60px;
+      height: 80px;
+      font-size: 1.5rem;
+      background-color: #f5f5f5;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .card:hover {
+      transform: scale(1.1);
+      background-color: #eeeeee;
+    }
+    .selected {
+      border: 2px solid #007bff;
+      background-color: #cce5ff;
+    }
+    table {
+      margin: 1rem auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem 1rem;
+    }
+    #result {
+      margin-top: 1rem;
+      font-weight: bold;
+      font-size: 1.4rem;
+      color: #4caf50;
+    }
+
+    #mesa-container {
+      margin: 2rem auto;
+      width: 400px;
+      height: 200px;
+      border: 4px solid #999;
+      border-radius: 50% / 25%;
+      position: relative;
+      background-color: #f4f4f4;
+    }
+
+    .persona {
+      position: absolute;
+      text-align: center;
+      width: 60px;
+      transform: translate(-50%, -50%);
+    }
+
+    .persona .icono {
+      width: 40px;
+      height: 40px;
+      background-color: #90caf9;
+      border-radius: 50%;
+      margin: 0 auto;
+    }
+
+    .persona .nombre {
+      font-size: 0.8rem;
+      margin-top: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Planning Poker</h1>
+
+  <div id="team-selection">
+    <p style="font-size: 1.5rem; font-weight: bold; color: #37474f;">Seleccioná tu equipo:</p>
+    <button id="btn-desarrollo">Desarrollo</button>
+    <button id="btn-produccion">Producción</button>
+    <button id="btn-otro">Otro</button>
+  </div>
+
+  <div id="role-selection" class="hidden">
+    <p>Elegí tu rol:</p>
+    <button id="btn-po">PO</button>
+    <button id="btn-member">Team Member</button>
+  </div>
+
+  <div id="name-input" class="hidden">
+    <p>Ingresá tu nombre:</p>
+    <input type="text" id="username" placeholder="Tu nombre">
+    <br>
+    <button onclick="confirmName()">Entrar</button>
+  </div>
+
+  <div id="poker-area" class="hidden">
+    <h2 id="welcome"></h2>
+    <div id="cards" class="hidden"></div>
+    <div id="po-controls" class="hidden">
+      <button onclick="revealVotes()">Revelar Votos</button>
+      <button onclick="resetVotes()">Reiniciar Votación</button>
+      <button onclick="resetParticipantes()">Reiniciar Participantes</button>
+    </div>
+    <h3>Votaciones</h3>
+    <table id="vote-table">
+      <thead><tr><th>Nombre</th><th>Voto</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div id="result" class="hidden"></div>
+    <div id="mesa-container"></div>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+  import { getDatabase, ref, set, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDDnsYIkxDfO3NVu1Wwf1LMPZ_xmHh4Zws",
+    authDomain: "planning-poker-ffc14.firebaseapp.com",
+    databaseURL: "https://planning-poker-ffc14-default-rtdb.firebaseio.com",
+    projectId: "planning-poker-ffc14",
+    storageBucket: "planning-poker-ffc14.appspot.com",
+    messagingSenderId: "835406865593",
+    appId: "1:835406865593:web:1b611dfbf8103ab992e768"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const fibonacci = [0, 1, 2, 3, 5, 8, 13, 21, 34, '?'];
+  let team = '', name = '', role = '', selectedCard = null, revealed = false, currentVotes = {};
+
+  document.getElementById('btn-desarrollo').onclick = () => selectTeam('desarrollo');
+  document.getElementById('btn-produccion').onclick = () => selectTeam('produccion');
+  document.getElementById('btn-otro').onclick = () => selectTeam('otro');
+  document.getElementById('btn-po').onclick = () => selectRole('po');
+  document.getElementById('btn-member').onclick = () => selectRole('member');
+
+  function selectTeam(selectedTeam) {
+    team = selectedTeam;
+    document.getElementById('team-selection').classList.add('hidden');
+    document.getElementById('role-selection').classList.remove('hidden');
+  }
+
+  function selectRole(r) {
+    role = r;
+    document.getElementById('role-selection').classList.add('hidden');
+    document.getElementById('name-input').classList.remove('hidden');
+  }
+
+  function actualizarConexion() {
+    if (name && team) {
+      set(ref(db, `${team}/connections/${name}`), { lastSeen: Date.now() });
+    }
+  }
+
+  setInterval(() => {
+    actualizarConexion();
+  }, 10000);
+
+  window.confirmName = function confirmName() {
+    name = document.getElementById('username').value.trim();
+    if (!name) return;
+
+    document.getElementById('name-input').classList.add('hidden');
+    document.getElementById('poker-area').classList.remove('hidden');
+
+    actualizarConexion();
+    set(ref(db, `${team}/votes/${name}`), '');
+
+    document.getElementById('welcome').innerText = `Hola, ${name} (${role === 'po' ? 'PO' : 'Team Member'})`;
+
+    if (role === 'po') document.getElementById('po-controls').classList.remove('hidden');
+    if (role === 'member') showCards();
+
+    listenForVotes();
+
+    onValue(ref(db, `${team}/connections`), (snapshot) => {
+      const conexiones = snapshot.val() || {};
+      const now = Date.now();
+      const activos = Object.entries(conexiones)
+        .filter(([_, data]) => now - data.lastSeen < 35000)
+        .map(([nombre]) => nombre);
+      renderMesa(activos);
+    });
+  }
+
+  function showCards() {
+    const container = document.getElementById('cards');
+    container.classList.remove('hidden');
+    container.innerHTML = '';
+
+    fibonacci.forEach(val => {
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerText = val;
+      div.onclick = () => selectCard(val, div);
+      container.appendChild(div);
+    });
+  }
+
+  function selectCard(value, element) {
+    selectedCard = value;
+    document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
+    element.classList.add('selected');
+    set(ref(db, `${team}/votes/${name}`), value);
+  }
+
+  window.revealVotes = function () {
+    set(ref(db, `${team}/meta/revealed`), true);
+  }
+
+  window.resetVotes = function () {
+    const updates = {};
+    Object.keys(currentVotes).forEach(user => {
+      updates[`${team}/votes/${user}`] = '';
+    });
+    update(ref(db), updates);
+    set(ref(db, `${team}/meta/revealed`), false);
+    selectedCard = null;
+    document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
+    document.getElementById('result')?.classList.add('hidden');
+  }
+
+  window.resetParticipantes = function () {
+    get(ref(db, `${team}/connections`)).then(connSnap => {
+      const connections = connSnap.val() || {};
+      const now = Date.now();
+      const activeUsers = {};
+
+      for (const [user, data] of Object.entries(connections)) {
+        if (now - data.lastSeen < 35000) {
+          activeUsers[user] = true;
+        }
+      }
+
+      get(ref(db, `${team}/votes`)).then(votesSnap => {
+        const votes = votesSnap.val() || {};
+        const updates = {};
+
+        for (const user of Object.keys(votes)) {
+          if (!(user in activeUsers)) {
+            updates[`${team}/votes/${user}`] = null;
+          }
+        }
+
+        for (const user of Object.keys(connections)) {
+          if (!(user in activeUsers)) {
+            updates[`${team}/connections/${user}`] = null;
+          }
+        }
+
+        update(ref(db), updates);
+        set(ref(db, `${team}/meta/revealed`), false);
+      });
+    });
+  }
+
+  function listenForVotes() {
+    onValue(ref(db, `${team}/meta/revealed`), (snapshot) => {
+      revealed = snapshot.val() === true;
+      updateVoteTable(currentVotes);
+    });
+
+    onValue(ref(db, `${team}/votes`), (snapshot) => {
+      const data = snapshot.val() || {};
+      const currentUserCard = data[name];
+      if (!currentUserCard) {
+        selectedCard = null;
+        document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
+      }
+      currentVotes = data;
+      updateVoteTable(currentVotes);
+    });
+  }
+
+  function updateVoteTable(votes = {}) {
+    const tbody = document.querySelector('#vote-table tbody');
+    tbody.innerHTML = '';
+    const voteCount = {};
+
+    Object.entries(votes).forEach(([user, card]) => {
+      const tr = document.createElement('tr');
+      const tdName = document.createElement('td');
+      const tdCard = document.createElement('td');
+      tdName.textContent = user;
+      tdCard.textContent = revealed ? card : (card === '' ? '—' : '🂠');
+      tr.appendChild(tdName);
+      tr.appendChild(tdCard);
+      tbody.appendChild(tr);
+
+      if (revealed && card !== '') {
+        voteCount[card] = (voteCount[card] || 0) + 1;
+      }
+    });
+
+    const resultDiv = document.getElementById('result');
+    if (revealed && Object.keys(voteCount).length > 0) {
+      const sorted = Object.entries(voteCount).sort((a, b) => b[1] - a[1]);
+      const top = sorted[0];
+      resultDiv.textContent = `Puntaje más votado: ${top[0]} (${top[1]} votos)`;
+      resultDiv.classList.remove('hidden');
+    } else {
+      resultDiv.classList.add('hidden');
+    }
+  }
+
+  function renderMesa(personas) {
+    const container = document.getElementById('mesa-container');
+    container.innerHTML = '';
+    const radiusX = container.offsetWidth / 2 - 40;
+    const radiusY = container.offsetHeight / 2 - 40;
+    const centerX = container.offsetWidth / 2;
+    const centerY = container.offsetHeight / 2;
+
+    const total = personas.length;
+    personas.forEach((nombre, i) => {
+      const angle = (2 * Math.PI * i) / total;
+      const x = centerX + radiusX * Math.cos(angle);
+      const y = centerY + radiusY * Math.sin(angle);
+
+      const div = document.createElement('div');
+      div.className = 'persona';
+      div.style.left = `${x}px`;
+      div.style.top = `${y}px`;
+
+      const icon = document.createElement('div');
+      icon.className = 'icono';
+      const label = document.createElement('div');
+      label.className = 'nombre';
+      label.textContent = nombre;
+
+      div.appendChild(icon);
+      div.appendChild(label);
+      container.appendChild(div);
+    });
+  }
+</script>
+
+
+</body>
+</html>
