@@ -839,7 +839,7 @@
         const container = document.getElementById('cards');
         container.classList.remove('hidden');
         container.innerHTML = '';
-
+      
         fibonacci.forEach(val => {
           const div = document.createElement('div');
           div.className = 'card';
@@ -847,6 +847,13 @@
           div.onclick = () => selectCard(val, div);
           container.appendChild(div);
         });
+      
+        // Carta extra de café
+        const cafeDiv = document.createElement('div');
+        cafeDiv.className = 'card';
+        cafeDiv.innerText = '☕';
+        cafeDiv.onclick = () => selectCard('cafe', cafeDiv);
+        container.appendChild(cafeDiv);
       }
 
       function selectCard(value, element) {
