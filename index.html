@@ -146,6 +146,14 @@
       margin-bottom: 2rem;
       position: relative;
     }
+    h1 a {
+        color: white;
+        text-decoration: none;
+        transition: text-shadow 0.3s;
+    }
+    h1 a:hover {
+        text-shadow: 0 4px 30px rgba(255,255,255,0.5);
+    }
 
     h1::after {
       content: '🎯';
@@ -160,10 +168,6 @@
       0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
       40% { transform: translateY(-10px); }
       60% { transform: translateY(-5px); }
-    }
-
-    .hidden { 
-      display: none; 
     }
 
     #team-selection, #role-selection, #name-input, #poker-area {
@@ -250,6 +254,10 @@
       background: linear-gradient(45deg, #4834d4, #686de0);
       color: white;
       box-shadow: 0 8px 25px rgba(72, 52, 212, 0.4);
+    }
+    #btn-spectator {
+        background: linear-gradient(45deg, #1dd1a1, #10ac84);
+        box-shadow: 0 8px 25px rgba(29, 209, 161, 0.4);
     }
 
     #role-selection button:hover {
@@ -481,9 +489,15 @@
     .persona.po .icono {
       background: linear-gradient(45deg, #ffd700, #ffed4e);
     }
+    .persona.spectator .icono {
+      background: linear-gradient(45deg, #1dd1a1, #10ac84);
+    }
 
     .persona.po .icono::before {
       content: '👑';
+    }
+    .persona.spectator .icono::before {
+      content: '👀';
     }
 
     .persona:hover .icono {
@@ -674,7 +688,8 @@
       .emoji-buttons button:hover {
         transform: scale(1.3);
       }
-      /* === ESTILOS PARA JAVI === */
+      
+      /* === ESTILOS PARA JAVI Y MODAL === */
       .javi-container {
         position: fixed;
         bottom: 50px;
@@ -732,28 +747,75 @@
         z-index: 1;
       }
 
-      @media (max-width: 768px) {
-        .javi-container {
-          max-width: 90%;
-          bottom: 10px;
-          right: 10px;
-        }
-        .javi-img {
-          width: 96px;
-          height: 96px;
-        }
-        .dialog-bubble {
-          font-size: 0.8rem;
-          padding: 0.8rem;
-          min-height: 100px;
-        }
+      #help-button {
+        position: fixed;
+        bottom: 50px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        z-index: 1000;
+        transition: all 0.3s ease;
+      }
+      #help-button:hover {
+        transform: scale(1.1) rotate(20deg);
+        box-shadow: 0 8px 30px rgba(255, 107, 107, 0.5);
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1001;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      }
+      .modal-content img {
+        max-width: 90%;
+        height: auto;
+        border-radius: 10px;
+      }
+      .modal-caption {
+        margin-top: 1rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #333;
+        max-width: 600px;
       }
   </style>
 </head>
 <body>
   <div id="main-container">
     <div class="falling-cards" id="falling-cards"></div>
-    <h1>Planning Poker 2.0</h1>
+    <h1><a href="/">Planning Poker 2.0</a></h1>
 
     <div id="team-selection">
       <p>🎯 Seleccioná tu equipo:</p>
@@ -766,6 +828,7 @@
       <p>👥 Elegí tu rol:</p>
       <button id="btn-po">🎪 PO</button>
       <button id="btn-member">🎯 Team Member</button>
+      <button id="btn-spectator">👀 Espectador</button>
     </div>
 
     <div id="name-input" class="hidden">
@@ -877,6 +940,8 @@
       document.getElementById('btn-otro').onclick = () => selectTeam('otro');
       document.getElementById('btn-po').onclick = () => selectRole('po');
       document.getElementById('btn-member').onclick = () => selectRole('member');
+      document.getElementById('btn-spectator').onclick = () => selectRole('spectator');
+
 
       // === FUNCIÓN PARA EFECTO DE TIPEO ===
       function typewriterEffect(elementId, text) {
@@ -954,7 +1019,6 @@
           const connections = connectionsSnapshot.val() || {};
           const now = Date.now();
           
-          // Buscar POs activos (diferentes al usuario actual)
           const activePO = Object.entries(connections).find(([userName, data]) => 
             userName !== name && 
             data.role === 'po' && 
@@ -974,14 +1038,25 @@
         document.getElementById('box3').classList.remove('hidden');
         document.getElementById('box4').classList.remove('hidden');
         document.getElementById('box5').classList.remove('hidden');
+        document.getElementById('help-button').classList.remove('hidden');
+
 
         actualizarConexion();
-        set(ref(db, `${team}/votes/${name}`), '');
+        // Solo registrar voto si no es espectador
+        if (role !== 'spectator') {
+          set(ref(db, `${team}/votes/${name}`), '');
+        }
 
-        document.getElementById('welcome').innerText = `🎉 Hola, ${name} (${role === 'po' ? '👑 PO' : '🎯 Team Member'})`;
+        const roleText = {
+            po: '👑 PO',
+            member: '🎯 Team Member',
+            spectator: '👀 Espectador'
+        };
+        document.getElementById('welcome').innerText = `🎉 Hola, ${name} (${roleText[role]})`;
 
         if (role === 'po') document.getElementById('po-controls').classList.remove('hidden');
         if (role === 'member') showCards();
+        // Spectator no ve ni controles ni cartas
 
         listenForVotes();
 
@@ -1016,10 +1091,7 @@
       }
 
       function selectCard(value, element) {
-        // No permitir cambiar voto si ya están revelados
-        if (revealed) {
-          return;
-        }
+        if (revealed) return;
         
         selectedCard = value;
         document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
@@ -1030,13 +1102,9 @@
       function updateCardsState() {
         const cards = document.querySelectorAll('.card');
         if (revealed) {
-          cards.forEach(card => {
-            card.classList.add('disabled');
-          });
+          cards.forEach(card => card.classList.add('disabled'));
         } else {
-          cards.forEach(card => {
-            card.classList.remove('disabled');
-          });
+          cards.forEach(card => card.classList.remove('disabled'));
         }
       }
 
@@ -1124,7 +1192,7 @@
           tr.appendChild(tdCard);
           tbody.appendChild(tr);
 
-          if (revealed && card !== '') {
+          if (revealed && card !== '' && card) {
             voteCount[card] = (voteCount[card] || 0) + 1;
           }
         });
@@ -1155,7 +1223,7 @@
           const y = centerY + radiusY * Math.sin(angle);
 
           const div = document.createElement('div');
-          div.className = persona.role === 'po' ? 'persona po' : 'persona';
+          div.className = `persona ${persona.role}`;
           div.style.left = `${x}px`;
           div.style.top = `${y}px`;
 
@@ -1170,6 +1238,22 @@
           container.appendChild(div);
         });
       }
+
+      // === MANEJO DEL MODAL DE AYUDA ===
+      const helpButton = document.getElementById('help-button');
+      const imageModal = document.getElementById('image-modal');
+
+      helpButton.addEventListener('click', () => {
+        imageModal.classList.remove('hidden');
+      });
+
+      imageModal.addEventListener('click', (event) => {
+        // Cierra el modal solo si se hace clic en el fondo (overlay)
+        if (event.target === imageModal) {
+          imageModal.classList.add('hidden');
+        }
+      });
+
     </script>
   </div>
   
@@ -1182,9 +1266,18 @@
     <div class="dialog-bubble" id="javi2-dialog"></div>
     <img src="javi2.png" alt="Javi Explicacion" class="javi-img">
   </div>
+  
+  <div id="help-button" class="hidden">?</div>
+
+  <div id="image-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <img src="fibonacci.png" alt="Guía de Votación Fibonacci">
+      <p class="modal-caption">Para ayudarte a votar, podés seguir la escala de aumento de peso según su incertidumbre y según el esfuerzo.</p>
+    </div>
+  </div>
 
 </body>
 <footer id="footer">
-  By Fran - v2.0 (Oct 2025) - <a href=" https://www.linkedin.com/in/francoleodg" target="_blank" style="color: #ff6b6b; text-decoration: none;">LinkedIn</a>
+  By Fran - v2.1 (Oct 2025) - <a href=" https://www.linkedin.com/in/francoleodg" target="_blank" style="color: #ff6b6b; text-decoration: none;">LinkedIn</a>
 </footer>
 </html>
