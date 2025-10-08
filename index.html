@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Planning Poker</title>
+  <title>Planning Poker 2.0</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
@@ -68,7 +68,6 @@
       display: none !important;
     }
 
-    /* Animaciones de cartas cayendo */
     @keyframes fall1 {
       0% {
         transform: translateY(-100px) rotate(0deg);
@@ -167,7 +166,6 @@
       display: none; 
     }
 
-    /* Contenedor principal con glassmorphism */
     #team-selection, #role-selection, #name-input, #poker-area {
       background: rgba(255, 255, 255, 0.25);
       backdrop-filter: blur(20px);
@@ -232,6 +230,11 @@
       left: 100%;
     }
 
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     #team-selection button {
       background: linear-gradient(45deg, #ff6b6b, #ee5a24);
       color: white;
@@ -261,7 +264,7 @@
       margin: 0.5rem;
     }
 
-    #po-controls button:hover {
+    #po-controls button:hover:not(:disabled) {
       transform: translateY(-2px) scale(1.03);
       box-shadow: 0 12px 30px rgba(10, 189, 227, 0.6);
     }
@@ -319,6 +322,12 @@
       color: #333;
     }
 
+    .card.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
     .card::before {
       content: '♠️';
       position: absolute;
@@ -338,7 +347,7 @@
       transform: rotate(180deg);
     }
 
-    .card:hover {
+    .card:hover:not(.disabled) {
       transform: translateY(-10px) scale(1.1) rotateZ(5deg);
       box-shadow: 
         0 20px 40px rgba(0,0,0,0.3),
@@ -469,6 +478,14 @@
       font-size: 1.5rem;
     }
 
+    .persona.po .icono {
+      background: linear-gradient(45deg, #ffd700, #ffed4e);
+    }
+
+    .persona.po .icono::before {
+      content: '👑';
+    }
+
     .persona:hover .icono {
       transform: scale(1.1);
       box-shadow: 
@@ -486,7 +503,7 @@
       padding: 0.2rem 0.7rem;
       border-radius: 15px;
       backdrop-filter: blur(10px);
-      max-width: 120px; /* ajustá según diseño */
+      max-width: 120px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -516,7 +533,24 @@
       backdrop-filter: blur(10px);
     }
 
-    /* Responsive design */
+    .error-message {
+      background: rgba(255, 0, 0, 0.15);
+      border: 2px solid rgba(255, 0, 0, 0.5);
+      color: white;
+      padding: 1rem;
+      border-radius: 15px;
+      margin: 1rem auto;
+      max-width: 500px;
+      font-weight: 500;
+      animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
     @media (max-width: 768px) {
       body {
         padding: 1rem !important;
@@ -640,12 +674,86 @@
       .emoji-buttons button:hover {
         transform: scale(1.3);
       }
+      /* === ESTILOS PARA JAVI === */
+      .javi-container {
+        position: fixed;
+        bottom: 50px;
+        right: 20px;
+        display: flex;
+        align-items: flex-end;
+        z-index: 1000;
+        max-width: 650px;
+      }
+
+      .javi-img {
+        width: 228px;
+        height: 228px;
+        margin-left: 10px;
+      }
+
+      .dialog-bubble {
+        background: rgba(255, 255, 255, 0.95);
+        color: #333;
+        padding: 1.2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        font-weight: 500;
+        line-height: 1.6;
+        border: 2px solid #764ba2;
+        position: relative;
+        max-width: 300px;
+        min-height: 120px;
+      }
+
+      .dialog-bubble::after {
+        content: '';
+        position: absolute;
+        bottom: 20px;
+        right: -12px;
+        width: 0;
+        height: 0;
+        border-top: 12px solid transparent;
+        border-bottom: 12px solid transparent;
+        border-left: 12px solid #764ba2;
+      }
+
+      .dialog-bubble::before {
+        content: '';
+        position: absolute;
+        bottom: 20px;
+        right: -10px;
+        width: 0;
+        height: 0;
+        border-top: 12px solid transparent;
+        border-bottom: 12px solid transparent;
+        border-left: 12px solid rgba(255, 255, 255, 0.95);
+        z-index: 1;
+      }
+
+      @media (max-width: 768px) {
+        .javi-container {
+          max-width: 90%;
+          bottom: 10px;
+          right: 10px;
+        }
+        .javi-img {
+          width: 96px;
+          height: 96px;
+        }
+        .dialog-bubble {
+          font-size: 0.8rem;
+          padding: 0.8rem;
+          min-height: 100px;
+        }
+      }
   </style>
 </head>
 <body>
   <div id="main-container">
     <div class="falling-cards" id="falling-cards"></div>
-    <h1>Planning Poker</h1>
+    <h1>Planning Poker 2.0</h1>
 
     <div id="team-selection">
       <p>🎯 Seleccioná tu equipo:</p>
@@ -665,6 +773,7 @@
       <input type="text" id="username" placeholder="Tu nombre">
       <br>
       <button onclick="confirmName()">🚀 Entrar</button>
+      <div id="error-container"></div>
     </div>
 
     <div id="poker-area" class="hidden" >
@@ -681,7 +790,7 @@
       </div>
       <div id="box2" class="hidden">
         <h3>📊 Votaciones</h3>
-        <table id="vote-table"
+        <table id="vote-table">
           <thead><tr><th>Nombre</th><th>Voto</th></tr></thead>
           <tbody></tbody>
         </table>
@@ -710,68 +819,56 @@
 
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
-        function createFallingCard() {
-          const container = document.getElementById('falling-cards');
-          const card = document.createElement('div');
-          card.className = 'falling-card';
-          
-          // Símbolos de cartas variados
-          const symbols = ['♠', '♥', '♦', '♣', '★', '♤', '♡', '♢'];
-          const numbers = ['0', '1', '2', '3', '5', '8', '13', '21', '?', 'OMG'];
-          
-          // Alternar entre símbolos y números
-          const content = Math.random() > 0.5 ? 
-            symbols[Math.floor(Math.random() * symbols.length)] : 
-            numbers[Math.floor(Math.random() * numbers.length)];
-          
-          card.setAttribute('data-symbol', content);
-          card.textContent = content;
-          
-          // Posición aleatoria horizontal
-          card.style.left = Math.random() * 100 + '%';
-          card.style.animationFillMode = 'backwards';
-          
-          // Animación aleatoria
-          const animations = ['fall1', 'fall2', 'fall3', 'fall4', 'fall5'];
-          const randomAnimation = animations[Math.floor(Math.random() * animations.length)];
-          
-          // Duración aleatoria entre 8 y 15 segundos
-          const duration = 8 + Math.random() * 7;
-          
-
-          // Luego activamos la animación en el siguiente frame
-          requestAnimationFrame(() => {
-            card.style.animation = `${randomAnimation} ${duration}s linear`;
-            card.style.animationDelay = Math.random() * 2 + 's';
-            card.style.animationFillMode = 'backwards';
-          });
-          
-          // Delay aleatorio
+      
+      function createFallingCard() {
+        const container = document.getElementById('falling-cards');
+        const card = document.createElement('div');
+        card.className = 'falling-card';
+        
+        const symbols = ['♠', '♥', '♦', '♣', '★', '♤', '♡', '♢'];
+        const numbers = ['0', '1', '2', '3', '5', '8', '13', '21', '?', 'OMG'];
+        
+        const content = Math.random() > 0.5 ? 
+          symbols[Math.floor(Math.random() * symbols.length)] : 
+          numbers[Math.floor(Math.random() * numbers.length)];
+        
+        card.setAttribute('data-symbol', content);
+        card.textContent = content;
+        
+        card.style.left = Math.random() * 100 + '%';
+        card.style.animationFillMode = 'backwards';
+        
+        const animations = ['fall1', 'fall2', 'fall3', 'fall4', 'fall5'];
+        const randomAnimation = animations[Math.floor(Math.random() * animations.length)];
+        
+        const duration = 8 + Math.random() * 7;
+        
+        requestAnimationFrame(() => {
+          card.style.animation = `${randomAnimation} ${duration}s linear`;
           card.style.animationDelay = Math.random() * 2 + 's';
-          
-          container.appendChild(card);
-          
-          // Remover carta después de la animación
-          setTimeout(() => {
-            if (card.parentNode) {
-              card.parentNode.removeChild(card);
-            }
+          card.style.animationFillMode = 'backwards';
+        });
+        
+        card.style.animationDelay = Math.random() * 2 + 's';
+        
+        container.appendChild(card);
+        
+        setTimeout(() => {
+          if (card.parentNode) {
+            card.parentNode.removeChild(card);
+          }
         }, (duration + 2) * 1000);
       }
 
-      // Crear cartas cayendo continuamente
       function startFallingCards() {
-        // Crear carta inicial
         createFallingCard();
-        
-        // Crear nuevas cartas cada 1.5-3 segundos
         setTimeout(() => {
           startFallingCards();
         }, 1500 + Math.random() * 1500);
       }
 
-      // Iniciar animación de cartas cayendo
       startFallingCards();
+      
       const fibonacci = [0, 1, 2, 3, 5, 8, 13, 21, 34, '?'];
       let team = '', name = '', role = '', selectedCard = null, revealed = false, currentVotes = {};
 
@@ -781,21 +878,57 @@
       document.getElementById('btn-po').onclick = () => selectRole('po');
       document.getElementById('btn-member').onclick = () => selectRole('member');
 
+      // === FUNCIÓN PARA EFECTO DE TIPEO ===
+      function typewriterEffect(elementId, text) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        el.innerHTML = '';
+        let i = 0;
+        const speed = 50; // milisegundos
+
+        function type() {
+          if (i < text.length) {
+            el.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+          }
+        }
+        type();
+      }
+
+      // Iniciar el primer diálogo de Javi cuando la página cargue
+      document.addEventListener('DOMContentLoaded', () => {
+        const text1 = "Bienvenid@, Soy Javi y te invito al planning poker, ¡elegí cualquier equipo!";
+        typewriterEffect('javi1-dialog', text1);
+      });
+
       function selectTeam(selectedTeam) {
         team = selectedTeam;
         document.getElementById('team-selection').classList.add('hidden');
+        document.getElementById('javi1-container').classList.add('hidden'); // Ocultar Javi 1
+        
+        const javi2Container = document.getElementById('javi2-container');
+        javi2Container.classList.remove('hidden'); // Mostrar Javi 2
+
+        const text2 = "El rol de PO será quien manejará el poker. ¡Solo se permite un \"PO\" por sala! Recordá que una vez mostrado el voto no podés cambiarlo. ¡A votar!";
+        typewriterEffect('javi2-dialog', text2);
+
         document.getElementById('role-selection').classList.remove('hidden');
       }
 
       function selectRole(r) {
         role = r;
         document.getElementById('role-selection').classList.add('hidden');
+        document.getElementById('javi2-container').classList.add('hidden'); // Ocultar Javi 2
         document.getElementById('name-input').classList.remove('hidden');
       }
 
       function actualizarConexion() {
         if (name && team) {
-          set(ref(db, `${team}/connections/${name}`), { lastSeen: Date.now() });
+          set(ref(db, `${team}/connections/${name}`), { 
+            lastSeen: Date.now(),
+            role: role 
+          });
         }
       }
 
@@ -803,9 +936,36 @@
         actualizarConexion();
       }, 10000);
 
-      window.confirmName = function confirmName() {
+      function showError(message) {
+        const errorContainer = document.getElementById('error-container');
+        errorContainer.innerHTML = `<div class="error-message">⚠️ ${message}</div>`;
+        setTimeout(() => {
+          errorContainer.innerHTML = '';
+        }, 5000);
+      }
+
+      window.confirmName = async function confirmName() {
         name = document.getElementById('username').value.trim();
         if (!name) return;
+
+        // Verificar si ya existe un PO activo
+        if (role === 'po') {
+          const connectionsSnapshot = await get(ref(db, `${team}/connections`));
+          const connections = connectionsSnapshot.val() || {};
+          const now = Date.now();
+          
+          // Buscar POs activos (diferentes al usuario actual)
+          const activePO = Object.entries(connections).find(([userName, data]) => 
+            userName !== name && 
+            data.role === 'po' && 
+            now - data.lastSeen < 35000
+          );
+
+          if (activePO) {
+            showError(`Ya hay un PO activo en esta sesión: ${activePO[0]}`);
+            return;
+          }
+        }
 
         document.getElementById('name-input').classList.add('hidden');
         document.getElementById('poker-area').classList.remove('hidden');
@@ -830,7 +990,7 @@
           const now = Date.now();
           const activos = Object.entries(conexiones)
             .filter(([_, data]) => now - data.lastSeen < 35000)
-            .map(([nombre]) => nombre);
+            .map(([nombre, data]) => ({ nombre, role: data.role }));
           renderMesa(activos);
         });
       }
@@ -848,7 +1008,6 @@
           container.appendChild(div);
         });
       
-        // Carta extra de café
         const cafeDiv = document.createElement('div');
         cafeDiv.className = 'card';
         cafeDiv.innerText = '☕';
@@ -857,10 +1016,28 @@
       }
 
       function selectCard(value, element) {
+        // No permitir cambiar voto si ya están revelados
+        if (revealed) {
+          return;
+        }
+        
         selectedCard = value;
         document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
         element.classList.add('selected');
         set(ref(db, `${team}/votes/${name}`), value);
+      }
+
+      function updateCardsState() {
+        const cards = document.querySelectorAll('.card');
+        if (revealed) {
+          cards.forEach(card => {
+            card.classList.add('disabled');
+          });
+        } else {
+          cards.forEach(card => {
+            card.classList.remove('disabled');
+          });
+        }
       }
 
       window.revealVotes = function () {
@@ -917,12 +1094,13 @@
         onValue(ref(db, `${team}/meta/revealed`), (snapshot) => {
           revealed = snapshot.val() === true;
           updateVoteTable(currentVotes);
+          updateCardsState();
         });
 
         onValue(ref(db, `${team}/votes`), (snapshot) => {
           const data = snapshot.val() || {};
           const currentUserCard = data[name];
-          if (!currentUserCard) {
+          if (!currentUserCard && !revealed) {
             selectedCard = null;
             document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
           }
@@ -971,13 +1149,13 @@
         const centerY = container.offsetHeight / 2;
 
         const total = personas.length;
-        personas.forEach((nombre, i) => {
+        personas.forEach((persona, i) => {
           const angle = (2 * Math.PI * i) / total;
           const x = centerX + radiusX * Math.cos(angle);
           const y = centerY + radiusY * Math.sin(angle);
 
           const div = document.createElement('div');
-          div.className = 'persona';
+          div.className = persona.role === 'po' ? 'persona po' : 'persona';
           div.style.left = `${x}px`;
           div.style.top = `${y}px`;
 
@@ -985,19 +1163,28 @@
           icon.className = 'icono';
           const label = document.createElement('div');
           label.className = 'nombre';
-          label.textContent = nombre;
+          label.textContent = persona.nombre;
 
           div.appendChild(icon);
           div.appendChild(label);
           container.appendChild(div);
         });
       }
-      import { setupEmojiAttacks } from './emojis.js';
-      setupEmojiAttacks();
     </script>
   </div>
+  
+  <div id="javi1-container" class="javi-container">
+    <div class="dialog-bubble" id="javi1-dialog"></div>
+    <img src="javi1.png" alt="Javi Bienvenida" class="javi-img">
+  </div>
+
+  <div id="javi2-container" class="javi-container hidden">
+    <div class="dialog-bubble" id="javi2-dialog"></div>
+    <img src="javi2.png" alt="Javi Explicacion" class="javi-img">
+  </div>
+
 </body>
 <footer id="footer">
-  By Fran
+  By Fran - v2.0 (Oct 2025) - <a href=" https://www.linkedin.com/in/francoleodg" target="_blank" style="color: #ff6b6b; text-decoration: none;">LinkedIn</a>
 </footer>
 </html>
