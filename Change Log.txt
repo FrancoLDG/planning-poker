@@ -1,0 +1,34 @@
+Change Log:
+
+FIXES:
+- Se arreglo problema visual de las falling cards las cuales aparecian 1 Segundo en el top de la pantalla para luego empezar a caer, ahora aparecen directamente cayendo y se van difuminando en el recorrido.
+
+-Se fixeo las posiciones de los elementos dentro de la pantalla de votaciones, antes se superponian los saludos al usuario con respect a los demas elementos, a partir de esta version cada element ocupa su propio espacio.
+
+-Se arreglo el bug que permitia cambiar de voto una vez revelado los votos grupales.
+
+-Se arreglo el problema visual de actualizacion de usuarios en la mesa de participantes, ahora no parpadean de acuerdo a la actualizacion de estados de conexion, y se organizan de forma fluida de acuerdo a los participantes entrantes.
+
+-Se corrigio el footer para que este se stre correctamente a lo largo de la pantalla.
+
+-Las falling cards ahora se difuminan mas al pasar por detrás del tablero, para evitar foco de atención en elementos secundarios.
+
+AGREGADOS:
+
+- Ahora se tiene a JAVI, quien mencionara en la primer pantalla una invitación a participar, y en la segunda pantalla te advertirá de los roles y los votos.
+
+-Se Agrego el ROL de espectador, quien podrá ver la mesa de participantes y sus votos a la hora de ser revelados.
+
+-Se agrego un temporizador de 30/60 segs, podrá ser iniciado por el PO y todos en la sala podrán ver el COUNTDOWN.
+
+-Se agrego un joker quien lanzara un cartel de finalización de temporizador en el momento que el contador llegue a 0.
+
+-Se agrego botón de ayuda, el cual desplegara una imagen orientativa acerca del puntaje a la hora de votar.
+
+-Se agrego TITULO a la sala, el PO podrá colocar un titulo a la sala el cual podrán ver todos los participantes, puede ser utilizado para mencionar el SPRINT que arrancara o en su defecto la temática o topico a votar.
+
+-Se agrego visualmente la version actual del proyecto en el footer.
+
+-Se agrego animación inicial de carga al momento de abrir la pagina, utilizado para otorgar 2 segundos mas al resto de los elementos para el DOM.
+
+-Ahora el PO, Espectador y Miembro se discriminan con logos distintos en la mesa con una CORONA, un par de OJOS y SILUETA respectivamente.
