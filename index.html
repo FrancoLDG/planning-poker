@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Planning Poker 2.0</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 125'%3E%3Crect x='10' y='10' width='80' height='110' rx='10' fill='%23FFF' stroke='%23333' stroke-width='5'/%3E%3Ctext x='50' y='75' font-size='60' text-anchor='middle' dominant-baseline='middle' fill='%23ff6b6b'%3E%E2%99%A5%3C/text%3E%3C/svg%3E">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
@@ -24,6 +25,61 @@
       overflow-x: hidden;
     }
 
+    /* === Pantalla de carga === */
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #6D63E8;
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      perspective: 800px;
+      transition: opacity 0.5s ease;
+    }
+
+    .loading-card {
+      width: 120px;
+      height: 170px;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: flip-and-fade-out 2.5s ease-in-out forwards;
+    }
+
+    .loading-card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .front {
+      background: linear-gradient(145deg, #f0f0f0, #ffffff);
+      color: #764ba2;
+    }
+
+    .back {
+      background: linear-gradient(145deg, #ff6b6b, #ee5a24);
+      color: white;
+      transform: rotateY(180deg);
+    }
+
+    @keyframes flip-and-fade-out {
+      0% { transform: rotateY(0deg); opacity: 1; }
+      40% { transform: rotateY(180deg); opacity: 1; }
+      80% { transform: rotateY(180deg); opacity: 1; }
+      100% { transform: rotateY(180deg) scale(0.8); opacity: 0; }
+    }
+    
     body::before {
       content: '';
       position: fixed;
@@ -61,116 +117,38 @@
       font-size: 1.2rem;
       font-weight: bold;
       color: #333;
-      opacity: 0.8;
+      opacity: 0; /* Inicia invisible */
     }
 
     .hidden {
       display: none !important;
     }
 
-    @keyframes fall1 {
-      0% {
-        transform: translateY(-100px) rotate(0deg);
-        opacity: 0.8;
-      }
-      70% {
-        opacity: 0.6;
-      }
-      100% {
-        transform: translateY(calc(100vh + 100px)) rotate(180deg);
-        opacity: 0;
-      }
-    }
+    /* MODIFICADO: Keyframes de caída para inicio suave */
+    @keyframes fall1 { 0% { transform: translateY(-100px) rotate(0deg); opacity: 0; } 10% { opacity: 0.8; } 70% { opacity: 0.6; } 100% { transform: translateY(calc(100vh + 100px)) rotate(180deg); opacity: 0; } }
+    @keyframes fall2 { 0% { transform: translateY(-100px) rotate(0deg) scale(0.8); opacity: 0; } 10% { opacity: 0.7; } 60% { opacity: 0.5; } 100% { transform: translateY(calc(100vh + 100px)) rotate(-160deg) scale(1.2); opacity: 0; } }
+    @keyframes fall3 { 0% { transform: translateY(-100px) rotate(45deg); opacity: 0; } 10% { opacity: 0.9; } 80% { opacity: 0.4; } 100% { transform: translateY(calc(100vh + 100px)) rotate(225deg); opacity: 0; } }
+    @keyframes fall4 { 0% { transform: translateY(-100px) rotate(-30deg) scale(1.1); opacity: 0; } 10% { opacity: 0.6; } 50% { opacity: 0.8; } 100% { transform: translateY(calc(100vh + 100px)) rotate(150deg) scale(0.9); opacity: 0; } }
+    @keyframes fall5 { 0% { transform: translateY(-100px) rotate(90deg); opacity: 0; } 10% { opacity: 0.7; } 90% { opacity: 0.3; } 100% { transform: translateY(calc(100vh + 100px)) rotate(-90deg); opacity: 0; } }
 
-    @keyframes fall2 {
-      0% {
-        transform: translateY(-100px) rotate(0deg) scale(0.8);
-        opacity: 0.7;
-      }
-      60% {
-        opacity: 0.5;
-      }
-      100% {
-        transform: translateY(calc(100vh + 100px)) rotate(-160deg) scale(1.2);
-        opacity: 0;
-      }
-    }
-
-    @keyframes fall3 {
-      0% {
-        transform: translateY(-100px) rotate(45deg);
-        opacity: 0.9;
-      }
-      80% {
-        opacity: 0.4;
-      }
-      100% {
-        transform: translateY(calc(100vh + 100px)) rotate(225deg);
-        opacity: 0;
-      }
-    }
-
-    @keyframes fall4 {
-      0% {
-        transform: translateY(-100px) rotate(-30deg) scale(1.1);
-        opacity: 0.6;
-      }
-      50% {
-        opacity: 0.8;
-      }
-      100% {
-        transform: translateY(calc(100vh + 100px)) rotate(150deg) scale(0.9);
-        opacity: 0;
-      }
-    }
-
-    @keyframes fall5 {
-      0% {
-        transform: translateY(-100px) rotate(90deg);
-        opacity: 0.7;
-      }
-      90% {
-        opacity: 0.3;
-      }
-      100% {
-        transform: translateY(calc(100vh + 100px)) rotate(-90deg);
-        opacity: 0;
-      }
-    }
-
+    /* === Elementos Principales === */
     h1 {
-      font-size: 3.5rem;
+      font-size: 3.2rem;
       font-weight: 700;
       color: white;
       text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      margin-bottom: 2rem;
-      position: relative;
+      margin-bottom: 0.5rem;
     }
-    h1 a {
-        color: white;
-        text-decoration: none;
-        transition: text-shadow 0.3s;
-    }
-    h1 a:hover {
-        text-shadow: 0 4px 30px rgba(255,255,255,0.5);
-    }
+    h1 a { color: white; text-decoration: none; transition: text-shadow 0.3s; }
+    h1 a:hover { text-shadow: 0 4px 30px rgba(255,255,255,0.5); }
+    
+    h2, h3 { color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.3); margin: 1rem 0; }
+    h2 { font-size: 1.4rem; font-weight: 500; } 
+    h3 { font-size: 1.6rem; font-weight: 600; } 
 
-    h1::after {
-      content: '🎯';
-      position: absolute;
-      top: 20px;
-      right: 28rem;
-      font-size: 2rem;
-      animation: bounce 2s infinite;
-    }
+    p { font-size: 1.4rem; font-weight: 500; color: white; margin-bottom: 1.5rem; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
 
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(-10px); }
-      60% { transform: translateY(-5px); }
-    }
-
-    #team-selection, #role-selection, #name-input, #poker-area {
+    .container-box {
       background: rgba(255, 255, 255, 0.25);
       backdrop-filter: blur(20px);
       border-radius: 20px;
@@ -178,697 +156,321 @@
       padding: 2.5rem;
       margin: 2rem auto;
       max-width: 80rem;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
       animation: slideIn 0.6s ease-out;
     }
 
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    
+    button { padding: 1rem 2.5rem; font-size: 1.2rem; font-weight: 600; border: none; border-radius: 50px; margin: 0.8rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; font-family: 'Poppins', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+    button::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: left 0.5s; }
+    button:hover::before { left: 100%; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    p {
-      font-size: 1.4rem;
-      font-weight: 500;
-      color: white;
+    #team-selection button { background: linear-gradient(45deg, #ff6b6b, #ee5a24); color: white; box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
+    #team-selection button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 35px rgba(255, 107, 107, 0.6); }
+
+    #role-selection button { background: linear-gradient(45deg, #4834d4, #686de0); color: white; box-shadow: 0 8px 25px rgba(72, 52, 212, 0.4); }
+    #btn-spectator { background: linear-gradient(45deg, #1dd1a1, #10ac84); box-shadow: 0 8px 25px rgba(29, 209, 161, 0.4); }
+    #role-selection button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 35px rgba(72, 52, 212, 0.6); }
+
+    #po-controls button { background: linear-gradient(45deg, #0abde3, #006ba6); color: white; box-shadow: 0 8px 25px rgba(10, 189, 227, 0.4); margin: 0.5rem; }
+    #po-controls button:hover:not(:disabled) { transform: translateY(-2px) scale(1.03); box-shadow: 0 12px 30px rgba(10, 189, 227, 0.6); }
+
+    input[type="text"] { font-size: 1.2rem; padding: 1rem 1.5rem; width: 300px; margin: 0.5rem; border: none; border-radius: 50px; background: rgba(255, 255, 255, 0.9); box-shadow: inset 0 2px 10px rgba(0,0,0,0.1); font-family: 'Poppins', sans-serif; text-align: center; transition: all 0.3s ease; }
+    input[type="text"]:focus { outline: none; box-shadow: inset 0 2px 10px rgba(0,0,0,0.1), 0 0 0 3px rgba(255, 255, 255, 0.3); transform: scale(1.02); }
+
+    #name-input button { background: linear-gradient(45deg, #00d2d3, #54a0ff); color: white; box-shadow: 0 8px 25px rgba(0, 210, 211, 0.4); }
+    #name-input button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 35px rgba(0, 210, 211, 0.6); }
+
+    .card { display: inline-block; border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 20px; padding: 1.5rem 1rem; margin: 0.8rem; cursor: pointer; width: 80px; height: 110px; font-size: 2rem; font-weight: 700; background: linear-gradient(145deg, #ffffff, #f0f0f0); box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.8); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; color: #333; }
+    .card.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+    .card::before { content: '♠️'; position: absolute; top: 8px; left: 8px; font-size: 0.8rem; opacity: 0.6; }
+    .card::after { content: '♠️'; position: absolute; bottom: 8px; right: 8px; font-size: 0.8rem; opacity: 0.6; transform: rotate(180deg); }
+    .card:hover:not(.disabled) { transform: translateY(-10px) scale(1.1) rotateZ(5deg); box-shadow: 0 20px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.8); border-color: rgba(255, 255, 255, 0.6); }
+    .selected { border: 3px solid #ff6b6b !important; background: linear-gradient(145deg, #ff6b6b, #ee5a24) !important; color: white !important; transform: translateY(-5px) scale(1.05); box-shadow: 0 15px 35px rgba(255, 107, 107, 0.5), inset 0 1px 0 rgba(255,255,255,0.3); }
+
+    table { margin: 1rem auto; border-collapse: collapse; background: rgba(255, 255, 255, 0.9); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); backdrop-filter: blur(10px); }
+    th, td { border: none; padding: 1rem 2rem; font-weight: 500; }
+    th { background: linear-gradient(45deg, #667eea, #764ba2); color: white; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    td { background: rgba(255, 255, 255, 0.8); transition: background 0.3s ease; }
+    tr:nth-child(even) td { background: rgba(240, 240, 240, 0.8); }
+    tr:hover td { background: rgba(102, 126, 234, 0.1); }
+
+    #result { margin-top: 1.5rem; font-weight: 700; font-size: 1.6rem; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.3); padding: 1.2rem; background: linear-gradient(45deg, #00d2d3, #54a0ff); border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4); animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4); } 50% { box-shadow: 0 15px 40px rgba(0, 210, 211, 0.6); } 100% { box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4); } }
+
+    #mesa-container { margin: 1rem auto; width: 480px; height: 220px; border: 6px solid rgba(255, 255, 255, 0.4); border-radius: 50% / 40%; position: relative; background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05)); backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3); }
+    .persona { position: absolute; text-align: center; width: 70px; transform: translate(-50%, -50%); transition: left 0.5s ease-out, top 0.5s ease-out; }
+    
+    /* MODIFICADO: Animación controlada por JS */
+    .persona.entering { animation: personaEntrance 0.6s ease-out; }
+
+    @keyframes personaEntrance { from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+    .persona .icono { width: 50px; height: 50px; background: linear-gradient(45deg, #ff6b6b, #ffa502); border-radius: 50%; margin: 0 auto; box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4), inset 0 2px 5px rgba(255,255,255,0.3); position: relative; transition: all 0.3s ease; }
+    .persona .icono::before { content: '👤'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.5rem; }
+    .persona.po .icono { background: linear-gradient(45deg, #ffd700, #ffed4e); }
+    .persona.spectator .icono { background: linear-gradient(45deg, #1dd1a1, #10ac84); }
+    .persona.po .icono::before { content: '👑'; }
+    .persona.spectator .icono::before { content: '👀'; }
+    .persona:hover .icono { transform: scale(1.1); box-shadow: 0 12px 35px rgba(255, 107, 107, 0.6), inset 0 2px 5px rgba(255,255,255,0.4); }
+    .persona .nombre { font-size: 0.7rem; font-weight: 600; margin-top: 0.5rem; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.3); background: rgba(0,0,0,0.2); padding: 0.2rem 0.7rem; border-radius: 15px; backdrop-filter: blur(10px); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    #cards { margin: 1rem 0; padding: 1.5rem; background: rgba(255, 255, 255, 0.1); border-radius: 20px; }
+
+    .error-message { background: rgba(255, 0, 0, 0.15); border: 2px solid rgba(255, 0, 0, 0.5); color: white; padding: 1rem; border-radius: 15px; margin: 1rem auto; max-width: 500px; font-weight: 500; animation: shake 0.5s; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+    /* === Layout de la pantalla de votación === */
+    #main-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
       margin-bottom: 1.5rem;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
-    button {
-      padding: 1rem 2.5rem;
-      font-size: 1.2rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 50px;
-      margin: 0.8rem;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
-      overflow: hidden;
-      font-family: 'Poppins', sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      transition: left 0.5s;
-    }
-
-    button:hover::before {
-      left: 100%;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    #team-selection button {
-      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-      color: white;
-      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
-    }
-
-    #team-selection button:hover {
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 15px 35px rgba(255, 107, 107, 0.6);
-    }
-
-    #role-selection button {
-      background: linear-gradient(45deg, #4834d4, #686de0);
-      color: white;
-      box-shadow: 0 8px 25px rgba(72, 52, 212, 0.4);
-    }
-    #btn-spectator {
-        background: linear-gradient(45deg, #1dd1a1, #10ac84);
-        box-shadow: 0 8px 25px rgba(29, 209, 161, 0.4);
-    }
-
-    #role-selection button:hover {
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 15px 35px rgba(72, 52, 212, 0.6);
-    }
-
-    #po-controls button {
-      background: linear-gradient(45deg, #0abde3, #006ba6);
-      color: white;
-      box-shadow: 0 8px 25px rgba(10, 189, 227, 0.4);
-      margin: 0.5rem;
-    }
-
-    #po-controls button:hover:not(:disabled) {
-      transform: translateY(-2px) scale(1.03);
-      box-shadow: 0 12px 30px rgba(10, 189, 227, 0.6);
-    }
-
-    input[type="text"] {
-      font-size: 1.2rem;
-      padding: 1rem 1.5rem;
-      width: 300px;
-      margin-bottom: 2rem;
-      border: none;
-      border-radius: 50px;
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
-      font-family: 'Poppins', sans-serif;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-
-    input[type="text"]:focus {
-      outline: none;
-      box-shadow: 
-        inset 0 2px 10px rgba(0,0,0,0.1),
-        0 0 0 3px rgba(255, 255, 255, 0.3);
-      transform: scale(1.02);
-    }
-
-    #name-input button {
-      background: linear-gradient(45deg, #00d2d3, #54a0ff);
-      color: white;
-      box-shadow: 0 8px 25px rgba(0, 210, 211, 0.4);
-    }
-
-    #name-input button:hover {
-      transform: translateY(-3px) scale(1.05);
-      box-shadow: 0 15px 35px rgba(0, 210, 211, 0.6);
-    }
-
-    .card {
-      display: inline-block;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 20px;
-      padding: 1.5rem 1rem;
-      margin: 0.8rem;
-      cursor: pointer;
-      width: 80px;
-      height: 110px;
-      font-size: 2rem;
-      font-weight: 700;
-      background: linear-gradient(145deg, #ffffff, #f0f0f0);
-      box-shadow: 
-        0 10px 30px rgba(0,0,0,0.2),
-        inset 0 1px 0 rgba(255,255,255,0.8);
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
-      color: #333;
-    }
-
-    .card.disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .card::before {
-      content: '♠️';
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      font-size: 0.8rem;
-      opacity: 0.6;
-    }
-
-    .card::after {
-      content: '♠️';
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      font-size: 0.8rem;
-      opacity: 0.6;
-      transform: rotate(180deg);
-    }
-
-    .card:hover:not(.disabled) {
-      transform: translateY(-10px) scale(1.1) rotateZ(5deg);
-      box-shadow: 
-        0 20px 40px rgba(0,0,0,0.3),
-        inset 0 1px 0 rgba(255,255,255,0.8);
-      border-color: rgba(255, 255, 255, 0.6);
-    }
-
-    .selected {
-      border: 3px solid #ff6b6b !important;
-      background: linear-gradient(145deg, #ff6b6b, #ee5a24) !important;
-      color: white !important;
-      transform: translateY(-5px) scale(1.05);
-      box-shadow: 
-        0 15px 35px rgba(255, 107, 107, 0.5),
-        inset 0 1px 0 rgba(255,255,255,0.3);
-    }
-
-    table {
-      margin: 2rem auto;
-      border-collapse: collapse;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      backdrop-filter: blur(10px);
-    }
-
-    th, td {
-      border: none;
-      padding: 1rem 2rem;
-      font-weight: 500;
-    }
-
-    th {
-      background: linear-gradient(45deg, #667eea, #764ba2);
-      color: white;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    td {
-      background: rgba(255, 255, 255, 0.8);
-      transition: background 0.3s ease;
-    }
-
-    tr:nth-child(even) td {
-      background: rgba(240, 240, 240, 0.8);
-    }
-
-    tr:hover td {
-      background: rgba(102, 126, 234, 0.1);
-    }
-
-    #result {
-      margin-top: 2rem;
-      font-weight: 700;
-      font-size: 1.8rem;
-      color: white;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    #poker-area {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 2rem;
       padding: 1.5rem;
-      background: linear-gradient(45deg, #00d2d3, #54a0ff);
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4); }
-      50% { box-shadow: 0 15px 40px rgba(0, 210, 211, 0.6); }
-      100% { box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4); }
-    }
-
-    #mesa-container {
-      margin: 3rem auto;
-      width: 500px;
-      height: 250px;
-      border: 6px solid rgba(255, 255, 255, 0.4);
-      border-radius: 50% / 40%;
-      position: relative;
-      background: linear-gradient(145deg, 
-        rgba(255, 255, 255, 0.2), 
-        rgba(255, 255, 255, 0.05));
-      backdrop-filter: blur(20px);
-      box-shadow: 
-        0 20px 50px rgba(0,0,0,0.2),
-        inset 0 1px 0 rgba(255,255,255,0.3);
-    }
-
-    .persona {
-      position: absolute;
-      text-align: center;
-      width: 70px;
-      transform: translate(-50%, -50%);
-      animation: personaEntrance 0.6s ease-out;
-    }
-
-    @keyframes personaEntrance {
-      from {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.5);
-      }
-      to {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-      }
-    }
-
-    .persona .icono {
-      width: 50px;
-      height: 50px;
-      background: linear-gradient(45deg, #ff6b6b, #ffa502);
-      border-radius: 50%;
-      margin: 0 auto;
-      box-shadow: 
-        0 8px 25px rgba(255, 107, 107, 0.4),
-        inset 0 2px 5px rgba(255,255,255,0.3);
-      position: relative;
-      transition: all 0.3s ease;
-    }
-
-    .persona .icono::before {
-      content: '👤';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.5rem;
-    }
-
-    .persona.po .icono {
-      background: linear-gradient(45deg, #ffd700, #ffed4e);
-    }
-    .persona.spectator .icono {
-      background: linear-gradient(45deg, #1dd1a1, #10ac84);
-    }
-
-    .persona.po .icono::before {
-      content: '👑';
-    }
-    .persona.spectator .icono::before {
-      content: '👀';
-    }
-
-    .persona:hover .icono {
-      transform: scale(1.1);
-      box-shadow: 
-        0 12px 35px rgba(255, 107, 107, 0.6),
-        inset 0 2px 5px rgba(255,255,255,0.4);
-    }
-
-    .persona .nombre {
-      font-size: 0.7rem;
-      font-weight: 600;
-      margin-top: 0.5rem;
-      color: white;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      background: rgba(0,0,0,0.2);
-      padding: 0.2rem 0.7rem;
-      border-radius: 15px;
-      backdrop-filter: blur(10px);
-      max-width: 120px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    h2, h3 {
-      color: white;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      margin: 1.5rem 0;
-    }
-
-    h2 {
-      font-size: 2rem;
-      font-weight: 600;
-    }
-
-    h3 {
-      font-size: 1.5rem;
-      font-weight: 500;
-    }
-
-    #cards {
-      margin: 2rem 0;
-      padding: 2rem;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 20px;
-      backdrop-filter: blur(10px);
+      /* AGREGADO: Efecto de desenfoque de fondo */
+      backdrop-filter: blur(5px); 
     }
 
-    .error-message {
-      background: rgba(255, 0, 0, 0.15);
-      border: 2px solid rgba(255, 0, 0, 0.5);
-      color: white;
-      padding: 1rem;
-      border-radius: 15px;
-      margin: 1rem auto;
-      max-width: 500px;
-      font-weight: 500;
-      animation: shake 0.5s;
+    .poker-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
     }
 
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-10px); }
-      75% { transform: translateX(10px); }
+    #left-panel {
+      flex: 1 1 500px; 
+      min-width: 300px;
+    }
+
+    #right-panel {
+      flex: 1 1 550px;
+      min-width: 320px;
     }
 
     @media (max-width: 768px) {
-      body {
-        padding: 1rem !important;
-      }
-
-      #team-selection, #role-selection, #name-input, #poker-area {
-        padding: 1.2rem !important;
-        margin: 1rem auto !important;
-      }
-
-      h1 {
-        font-size: 2.2rem !important;
-        margin-bottom: 1rem !important;
-      }
-
-      h2 {
-        font-size: 1.5rem !important;
-      }
-
-      h3 {
-        font-size: 1.2rem !important;
-      }
-
-      p {
-        font-size: 1rem !important;
-        margin-bottom: 1rem !important;
-      }
-
-      button {
-        padding: 0.6rem 1.5rem !important;
-        font-size: 1rem !important;
-        margin: 0.4rem !important;
-      }
-
-      input[type="text"] {
-        font-size: 1rem !important;
-        padding: 0.6rem 1rem !important;
-        width: 220px !important;
-        margin-bottom: 1rem !important;
-      }
-
-      .card {
-        width: 60px !important;
-        height: 80px !important;
-        font-size: 1.5rem !important;
-        margin: 0.5rem !important;
-      }
-
-      #mesa-container {
-        width: 350px !important;
-        height: 180px !important;
-        margin: 1.5rem auto !important;
-      }
-
-      #result {
-        font-size: 1.2rem !important;
-        padding: 1rem !important;
-        margin-top: 1rem !important;
-      }
+      body { padding: 1rem !important; }
+      .container-box, #poker-area { padding: 1.2rem !important; margin: 1rem auto !important; }
+      h1 { font-size: 2.2rem !important; margin-bottom: 1rem !important; }
+      h2 { font-size: 1.2rem !important; }
+      h3 { font-size: 1.5rem !important; }
+      p { font-size: 1rem !important; margin-bottom: 1rem !important; }
+      button { padding: 0.6rem 1.5rem !important; font-size: 1rem !important; margin: 0.4rem !important; }
+      input[type="text"] { font-size: 1rem !important; padding: 0.6rem 1rem !important; width: 220px !important; margin-bottom: 1rem !important; }
+      .card { width: 60px !important; height: 80px !important; font-size: 1.5rem !important; margin: 0.5rem !important; }
+      #mesa-container { width: 350px !important; height: 180px !important; margin: 1rem auto !important; }
+      #result { font-size: 1.2rem !important; padding: 1rem !important; margin-top: 1rem !important; }
     }
-      #poker-area {
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-        grid-template-rows: auto auto auto;
-        gap: 1rem;
-        padding: 2rem;
-        border: 3px solid black;
-        width: fit-content;
-        margin: auto;
-      }
+      
+      #footer { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; background: rgba(0, 0, 0, 0.4); color: white; padding: 0.5rem; font-size: 0.9rem; font-family: 'Poppins', sans-serif; backdrop-filter: blur(6px); z-index: 9999; }
+      
+      .javi-container { position: fixed; bottom: 50px; right: 20px; display: flex; align-items: flex-end; z-index: 1000; max-width: 650px; }
+      .javi-img { width: 228px; height: 228px; margin-left: 10px; }
+      .dialog-bubble { background: rgba(255, 255, 255, 0.95); color: #333; padding: 1.2rem; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 500; line-height: 1.6; border: 2px solid #764ba2; position: relative; max-width: 300px; min-height: 120px; }
+      .dialog-bubble::after { content: ''; position: absolute; bottom: 20px; right: -12px; width: 0; height: 0; border-top: 12px solid transparent; border-bottom: 12px solid transparent; border-left: 12px solid #764ba2; }
+      .dialog-bubble::before { content: ''; position: absolute; bottom: 20px; right: -10px; width: 0; height: 0; border-top: 12px solid transparent; border-bottom: 12px solid transparent; border-left: 12px solid rgba(255, 255, 255, 0.95); z-index: 1; }
 
-      #box2 {
-        grid-row: 1 / span 3;
-        grid-column: 1;
-      }
+      #help-button { position: fixed; bottom: 50px; left: 20px; width: 50px; height: 50px; background: linear-gradient(45deg, #ff6b6b, #ee5a24); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 1000; transition: all 0.3s ease; }
+      #help-button:hover { transform: scale(1.1) rotate(20deg); box-shadow: 0 8px 30px rgba(255, 107, 107, 0.5); }
 
-      #box1 {
-        grid-row: 1;
-        grid-column: 2;
-      }
+      .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1001; animation: fadeIn 0.3s ease; }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      .modal-content { background: white; padding: 2rem; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+      .modal-content img { max-width: 90%; height: auto; border-radius: 10px; }
+      .modal-caption { margin-top: 1rem; font-size: 1.1rem; font-weight: 500; color: #333; max-width: 600px; }
 
-      #box3 {
-        grid-row: 2;
-        grid-column: 2;
-        position: relative;
-        top: -3rem;
+      /* === Estilos para el Título de Sala y Temporizador === */
+      #room-title-display {
+          font-size: 1.3rem;
+          font-weight: 600;
+          color: white;
+          text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+          padding: 0.6rem 1.5rem;
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 15px;
+          backdrop-filter: blur(10px);
+          margin-top: 0.5rem;
       }
-
-      #box4 {
-        grid-row: 3;
-        grid-column: 2;
-        position: relative;
-        top: -5rem;
+      #po-title-controls, #po-timer-controls {
+          margin-top: 1.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.3);
       }
-
-      .box {
-        border: 2px solid black;
-        padding: 2rem;
-        text-align: center;
-      }
-      #box5 {
-        top: -7.5rem;
-        right: 22rem;
-        padding: 3rem;
-        text-align: center;
-        position: absolute; 
-      }
-      #footer {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        text-align: center;
-        background: rgba(0, 0, 0, 0.4);
-        color: white;
-        padding: 0.5rem;
-        font-size: 0.9rem;
-        font-family: 'Poppins', sans-serif;
-        backdrop-filter: blur(6px);
-        z-index: 9999;
-      }
-      .emoji-buttons button:hover {
-        transform: scale(1.3);
+      #timer-display {
+          position: fixed;
+          bottom: 110px; 
+          left: 20px; 
+          background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+          color: white;
+          padding: 0.8rem 2rem;
+          border-radius: 50px;
+          font-size: 2rem;
+          font-weight: 700;
+          box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+          z-index: 9998;
+          text-shadow: 0 2px 5px rgba(0,0,0,0.3);
       }
       
-      /* === ESTILOS PARA JAVI Y MODAL === */
-      .javi-container {
-        position: fixed;
-        bottom: 50px;
-        right: 20px;
-        display: flex;
-        align-items: flex-end;
-        z-index: 1000;
-        max-width: 650px;
+      /* === ANIMACIÓN JOKER Y TIME! === */
+      @font-face {
+          font-family: 'PressStart2P';
+          src: url('PressStart2P-Regular.ttf') format('truetype'); /* Asume que tienes esta fuente */
       }
 
-      .javi-img {
-        width: 228px;
-        height: 228px;
-        margin-left: 10px;
+      #joker-container {
+          position: fixed;
+          /* Ajuste de posición: arriba del timer */
+          bottom: 0; /* Lo coloco abajo del todo para que la imagen sobresalga del borde inferior de la pantalla */
+          left: 0;
+          width: 250px; 
+          height: 300px;
+          z-index: 10000;
+          pointer-events: none;
+          display: none; /* Controlado por JS */
+      }
+      
+      #joker-container img {
+          position: absolute;
+          bottom: 0;
+          left: -100px; 
+          width: 250px;
+          height: auto;
+          /* Removí la transición de opacidad de aquí para controlarla manualmente en JS */
       }
 
-      .dialog-bubble {
-        background: rgba(255, 255, 255, 0.95);
-        color: #333;
-        padding: 1.2rem;
-        border-radius: 15px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.25);
-        font-family: 'Poppins', sans-serif;
-        font-size: 1rem;
-        font-weight: 500;
-        line-height: 1.6;
-        border: 2px solid #764ba2;
-        position: relative;
-        max-width: 300px;
-        min-height: 120px;
+      /* Animación de entrada: desliza desde la izquierda y luego desaparece */
+      @keyframes slideInAndOut {
+          0% { transform: translateX(-100%); opacity: 0; }
+          10% { transform: translateX(0); opacity: 1; }
+          90% { transform: translateX(0); opacity: 1; }
+          100% { transform: translateX(-100%); opacity: 0; }
+      }
+      
+      #time-message {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-family: 'PressStart2P', monospace; 
+          font-size: 6rem;
+          color: #ff0000;
+          text-shadow: 4px 4px 0 #000, -2px -2px 0 #ffff00;
+          z-index: 10001;
+          /* CORRECCIÓN: display: none se maneja por 'style' en el HTML */
+          letter-spacing: 5px;
+      }
+      
+      /* Animación de parpadeo (flicker) */
+      @keyframes flicker {
+          0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; text-shadow: 4px 4px 0 #000, -2px -2px 0 #ffff00; }
+          20%, 24%, 55% { opacity: 0.8; text-shadow: 2px 2px 0 #000, -1px -1px 0 #ffaa00; }
+          40% { opacity: 0.9; text-shadow: 6px 6px 0 #000, -3px -3px 0 #ffffff; }
+      }
+      
+      .flickering {
+          animation: flicker 0.2s infinite;
       }
 
-      .dialog-bubble::after {
-        content: '';
-        position: absolute;
-        bottom: 20px;
-        right: -12px;
-        width: 0;
-        height: 0;
-        border-top: 12px solid transparent;
-        border-bottom: 12px solid transparent;
-        border-left: 12px solid #764ba2;
-      }
-
-      .dialog-bubble::before {
-        content: '';
-        position: absolute;
-        bottom: 20px;
-        right: -10px;
-        width: 0;
-        height: 0;
-        border-top: 12px solid transparent;
-        border-bottom: 12px solid transparent;
-        border-left: 12px solid rgba(255, 255, 255, 0.95);
-        z-index: 1;
-      }
-
-      #help-button {
-        position: fixed;
-        bottom: 50px;
-        left: 20px;
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-        z-index: 1000;
-        transition: all 0.3s ease;
-      }
-      #help-button:hover {
-        transform: scale(1.1) rotate(20deg);
-        box-shadow: 0 8px 30px rgba(255, 107, 107, 0.5);
-      }
-
-      .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.7);
-        backdrop-filter: blur(10px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1001;
-        animation: fadeIn 0.3s ease;
-      }
-
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-
-      .modal-content {
-        background: white;
-        padding: 2rem;
-        border-radius: 20px;
-        text-align: center;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-      }
-      .modal-content img {
-        max-width: 90%;
-        height: auto;
-        border-radius: 10px;
-      }
-      .modal-caption {
-        margin-top: 1rem;
-        font-size: 1.1rem;
-        font-weight: 500;
-        color: #333;
-        max-width: 600px;
-      }
   </style>
 </head>
 <body>
+  <div id="loading-screen">
+      <div class="loading-card">
+          <div class="loading-card-face front">🃏</div>
+          <div class="loading-card-face back">🚀</div>
+      </div>
+  </div>
+
   <div id="main-container">
     <div class="falling-cards" id="falling-cards"></div>
-    <h1><a href="index.html">Planning Poker 2.0</a></h1>
-
-    <div id="team-selection">
+    
+    <div id="team-selection" class="container-box">
       <p>🎯 Seleccioná tu equipo:</p>
       <button id="btn-desarrollo">🚀 Desarrollo</button>
       <button id="btn-produccion">⚡ Producción</button>
       <button id="btn-otro">🎪 Otro</button>
     </div>
 
-    <div id="role-selection" class="hidden">
+    <div id="role-selection" class="container-box hidden">
       <p>👥 Elegí tu rol:</p>
       <button id="btn-po">🎪 PO</button>
       <button id="btn-member">🎯 Team Member</button>
       <button id="btn-spectator">👀 Espectador</button>
     </div>
 
-    <div id="name-input" class="hidden">
+    <div id="name-input" class="container-box hidden">
       <p>✨ Ingresá tu nombre:</p>
       <input type="text" id="username" placeholder="Tu nombre">
       <br>
       <button onclick="confirmName()">🚀 Entrar</button>
       <div id="error-container"></div>
     </div>
-
-    <div id="poker-area" class="hidden" >
-      <div id="box5" class="hidden">
+    
+    <div id="voting-container" class="hidden">
+      <header id="main-header">
+        <h1><a href="index.html">Planning Poker 2.0</a></h1>
+        <div id="room-title-display" class="hidden"></div>
         <h2 id="welcome"></h2>
-      </div>
-      <div id="box1" class="hidden">
-        <div id="cards" class="hidden"></div>
-        <div id="po-controls" class="hidden">
-          <button onclick="revealVotes()">🎭 Revelar Votos</button>
-          <button onclick="resetVotes()">🔄 Reiniciar Votación</button>
-          <button onclick="resetParticipantes()">🩹 Reiniciar Participantes</button>
+      </header>
+      
+      <div id="poker-area">
+        <div id="left-panel" class="poker-panel">
+          <h3>📊 Votaciones</h3>
+          <table id="vote-table">
+            <thead><tr><th>Nombre</th><th>Voto</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <h3>👥 Participantes</h3>
+          <div id="mesa-container"></div>
+        </div>
+
+        <div id="right-panel" class="poker-panel">
+          <div id="cards" class="hidden"></div>
+          <div id="po-controls" class="hidden">
+            <button onclick="revealVotes()">🎭 Revelar Votos</button>
+            <button onclick="resetVotes()">🔄 Reiniciar Votación</button>
+            <button onclick="resetParticipantes()">🩹 Reiniciar Participantes</button>
+            
+            <div id="po-title-controls">
+                <input type="text" id="room-title-input" placeholder="Título de la sesión...">
+                <button onclick="setRoomTitle()">Fijar Título</button>
+            </div>
+            <div id="po-timer-controls">
+                <p>⏱️ Iniciar Temporizador:</p>
+                <button onclick="startTimer(30)">30s</button>
+                <button onclick="startTimer(60)">60s</button>
+            </div>
+          </div>
+          <div id="result" class="hidden"></div>
         </div>
       </div>
-      <div id="box2" class="hidden">
-        <h3>📊 Votaciones</h3>
-        <table id="vote-table">
-          <thead><tr><th>Nombre</th><th>Voto</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div id="box3" class="hidden">
-        <div id="mesa-container"></div>
-      </div>
-      <div id="box4" class="hidden">
-        <div id="result" class="hidden"></div>
-      </div>
     </div>
+    
+    <div id="timer-display" class="hidden"></div>
+    
+    <div id="joker-container" style="display: none;">
+        <img id="joker-showing" src="showing.png" alt="Joker Apareciendo" style="left: -100px; opacity: 0;"/>
+        <img id="joker-throwing" src="arrojando.png" alt="Joker Arrojando" style="left: -100px; opacity: 0;"/>
+    </div>
+    <div id="time-message" style="display: none;">TIME!</div> 
+    <audio id="time-audio" src="time.mp3"></audio>
+
 
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-      import { getDatabase, ref, set, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+      import { getDatabase, ref, set, onValue, update, get, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyDDnsYIkxDfO3NVu1Wwf1LMPZ_xmHh4Zws",
@@ -899,41 +501,44 @@
         card.textContent = content;
         
         card.style.left = Math.random() * 100 + '%';
-        card.style.animationFillMode = 'backwards';
         
         const animations = ['fall1', 'fall2', 'fall3', 'fall4', 'fall5'];
         const randomAnimation = animations[Math.floor(Math.random() * animations.length)];
-        
         const duration = 8 + Math.random() * 7;
         
-        requestAnimationFrame(() => {
-          card.style.animation = `${randomAnimation} ${duration}s linear`;
-          card.style.animationDelay = Math.random() * 2 + 's';
-          card.style.animationFillMode = 'backwards';
-        });
-        
-        card.style.animationDelay = Math.random() * 2 + 's';
+        // MODIFICADO: Aplicación de animación más limpia
+        card.style.animation = `${randomAnimation} ${duration}s linear ${Math.random() * 5}s`;
         
         container.appendChild(card);
         
         setTimeout(() => {
-          if (card.parentNode) {
-            card.parentNode.removeChild(card);
-          }
-        }, (duration + 2) * 1000);
+          card.remove();
+        }, (duration + 5) * 1000);
       }
 
       function startFallingCards() {
         createFallingCard();
-        setTimeout(() => {
-          startFallingCards();
-        }, 1500 + Math.random() * 1500);
+        setTimeout(startFallingCards, 1500 + Math.random() * 1500);
       }
 
+      document.addEventListener('DOMContentLoaded', () => {
+          setTimeout(() => {
+              const loadingScreen = document.getElementById('loading-screen');
+              if (loadingScreen) {
+                  loadingScreen.style.opacity = '0';
+                  setTimeout(() => loadingScreen.classList.add('hidden'), 500);
+              }
+          }, 1500);
+          
+          const text1 = "Bienvenid@, Soy Javi y te invito al planning poker, ¡elegí cualquier equipo!";
+          typewriterEffect('javi1-dialog', text1);
+      });
+      
       startFallingCards();
       
       const fibonacci = [0, 1, 2, 3, 5, 8, 13, 21, 34, '?'];
       let team = '', name = '', role = '', selectedCard = null, revealed = false, currentVotes = {};
+      let timerInterval = null; 
 
       document.getElementById('btn-desarrollo').onclick = () => selectTeam('desarrollo');
       document.getElementById('btn-produccion').onclick = () => selectTeam('produccion');
@@ -942,14 +547,12 @@
       document.getElementById('btn-member').onclick = () => selectRole('member');
       document.getElementById('btn-spectator').onclick = () => selectRole('spectator');
 
-
-      // === FUNCIÓN PARA EFECTO DE TIPEO ===
       function typewriterEffect(elementId, text) {
         const el = document.getElementById(elementId);
         if (!el) return;
         el.innerHTML = '';
         let i = 0;
-        const speed = 50; // milisegundos
+        const speed = 50; 
 
         function type() {
           if (i < text.length) {
@@ -961,19 +564,13 @@
         type();
       }
 
-      // Iniciar el primer diálogo de Javi cuando la página cargue
-      document.addEventListener('DOMContentLoaded', () => {
-        const text1 = "Bienvenid@, Soy Javi y te invito al planning poker, ¡elegí cualquier equipo!";
-        typewriterEffect('javi1-dialog', text1);
-      });
-
       function selectTeam(selectedTeam) {
         team = selectedTeam;
         document.getElementById('team-selection').classList.add('hidden');
-        document.getElementById('javi1-container').classList.add('hidden'); // Ocultar Javi 1
+        document.getElementById('javi1-container').classList.add('hidden'); 
         
         const javi2Container = document.getElementById('javi2-container');
-        javi2Container.classList.remove('hidden'); // Mostrar Javi 2
+        javi2Container.classList.remove('hidden');
 
         const text2 = "El rol de PO será quien manejará el poker. ¡Solo se permite un \"PO\" por sala! Recordá que una vez mostrado el voto no podés cambiarlo. ¡A votar!";
         typewriterEffect('javi2-dialog', text2);
@@ -984,10 +581,10 @@
       function selectRole(r) {
         role = r;
         document.getElementById('role-selection').classList.add('hidden');
-        document.getElementById('javi2-container').classList.add('hidden'); // Ocultar Javi 2
+        document.getElementById('javi2-container').classList.add('hidden');
         document.getElementById('name-input').classList.remove('hidden');
       }
-
+      
       function actualizarConexion() {
         if (name && team) {
           set(ref(db, `${team}/connections/${name}`), { 
@@ -997,9 +594,7 @@
         }
       }
 
-      setInterval(() => {
-        actualizarConexion();
-      }, 10000);
+      setInterval(actualizarConexion, 10000);
 
       function showError(message) {
         const errorContainer = document.getElementById('error-container');
@@ -1013,18 +608,13 @@
         name = document.getElementById('username').value.trim();
         if (!name) return;
 
-        // Verificar si ya existe un PO activo
         if (role === 'po') {
           const connectionsSnapshot = await get(ref(db, `${team}/connections`));
           const connections = connectionsSnapshot.val() || {};
           const now = Date.now();
-          
           const activePO = Object.entries(connections).find(([userName, data]) => 
-            userName !== name && 
-            data.role === 'po' && 
-            now - data.lastSeen < 35000
+            userName !== name && data.role === 'po' && now - data.lastSeen < 35000
           );
-
           if (activePO) {
             showError(`Ya hay un PO activo en esta sesión: ${activePO[0]}`);
             return;
@@ -1032,48 +622,32 @@
         }
 
         document.getElementById('name-input').classList.add('hidden');
-        document.getElementById('poker-area').classList.remove('hidden');
-        document.getElementById('box1').classList.remove('hidden');
-        document.getElementById('box2').classList.remove('hidden');
-        document.getElementById('box3').classList.remove('hidden');
-        document.getElementById('box4').classList.remove('hidden');
-        document.getElementById('box5').classList.remove('hidden');
+        document.getElementById('voting-container').classList.remove('hidden');
         document.getElementById('help-button').classList.remove('hidden');
 
-
         actualizarConexion();
-        // Solo registrar voto si no es espectador
         if (role !== 'spectator') {
           set(ref(db, `${team}/votes/${name}`), '');
         }
 
-        const roleText = {
-            po: '👑 PO',
-            member: '🎯 Team Member',
-            spectator: '👀 Espectador'
-        };
+        if (role === 'po') {
+            const titleRef = ref(db, `${team}/meta/roomTitle`);
+            onDisconnect(titleRef).remove();
+        }
+
+        const roleText = { po: '👑 PO', member: '🎯 Team Member', spectator: '👀 Espectador' };
         document.getElementById('welcome').innerText = `🎉 Hola, ${name} (${roleText[role]})`;
 
         if (role === 'po') document.getElementById('po-controls').classList.remove('hidden');
         if (role === 'member') showCards();
-        // Spectator no ve ni controles ni cartas
 
-        listenForVotes();
-
-        onValue(ref(db, `${team}/connections`), (snapshot) => {
-          const conexiones = snapshot.val() || {};
-          const now = Date.now();
-          const activos = Object.entries(conexiones)
-            .filter(([_, data]) => now - data.lastSeen < 35000)
-            .map(([nombre, data]) => ({ nombre, role: data.role }));
-          renderMesa(activos);
-        });
+        listenToEverything();
       }
 
       function showCards() {
         const container = document.getElementById('cards');
         container.classList.remove('hidden');
-        container.innerHTML = '';
+        container.innerHTML = '<h3>👇 Elige tu carta</h3>';
       
         fibonacci.forEach(val => {
           const div = document.createElement('div');
@@ -1098,7 +672,7 @@
         element.classList.add('selected');
         set(ref(db, `${team}/votes/${name}`), value);
       }
-
+      
       function updateCardsState() {
         const cards = document.querySelectorAll('.card');
         if (revealed) {
@@ -1108,6 +682,19 @@
         }
       }
 
+      window.setRoomTitle = function() {
+          const title = document.getElementById('room-title-input').value;
+          set(ref(db, `${team}/meta/roomTitle`), title);
+      }
+
+      window.startTimer = function(duration) {
+          const timerData = {
+              startTime: Date.now(),
+              duration: duration * 1000
+          };
+          set(ref(db, `${team}/meta/timer`), timerData);
+      }
+      
       window.revealVotes = function () {
         set(ref(db, `${team}/meta/revealed`), true);
       }
@@ -1119,6 +706,7 @@
         });
         update(ref(db), updates);
         set(ref(db, `${team}/meta/revealed`), false);
+        set(ref(db, `${team}/meta/timer`), null);
         selectedCard = null;
         document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
         document.getElementById('result')?.classList.add('hidden');
@@ -1132,7 +720,7 @@
 
           for (const [user, data] of Object.entries(connections)) {
             if (now - data.lastSeen < 35000) {
-              activeUsers[user] = true;
+                activeUsers[user] = true;
             }
           }
 
@@ -1157,14 +745,127 @@
           });
         });
       }
+      
+      // Función modificada para reproducir sonido y activar la animación
+      function playTimerEndSound() {
+        // Reproducir sonido
+        const audio = document.getElementById('time-audio');
+        if (audio) {
+            // Aseguramos que se reinicie si ya se está reproduciendo
+            audio.currentTime = 0; 
+            audio.play().catch(e => console.error("Error playing sound:", e));
+        }
 
-      function listenForVotes() {
-        onValue(ref(db, `${team}/meta/revealed`), (snapshot) => {
-          revealed = snapshot.val() === true;
-          updateVoteTable(currentVotes);
-          updateCardsState();
+        // Iniciar Animación
+        animateJokerTime();
+      }
+      
+      // CORRECCIÓN y AJUSTE DE TIEMPO para 1.5s de parpadeo
+      function animateJokerTime() {
+        const jokerContainer = document.getElementById('joker-container');
+        const jokerShowing = document.getElementById('joker-showing');
+        const jokerThrowing = document.getElementById('joker-throwing');
+        const timeMessage = document.getElementById('time-message');
+
+        // 0. Reset y Mostrar el contenedor principal
+        jokerShowing.style.opacity = '0';
+        jokerThrowing.style.opacity = '0';
+        jokerContainer.style.display = 'block';
+        jokerShowing.style.transition = 'transform 0.5s ease-out, opacity 0.1s linear';
+        jokerThrowing.style.transition = 'opacity 0.1s linear';
+        
+        // CORRECCIÓN: Aseguramos el estado inicial
+        timeMessage.style.display = 'none';
+        timeMessage.classList.remove('flickering');
+
+
+        // 1. Mostrar la imagen "showing.png" y animarla (0s -> 0.5s)
+        jokerShowing.style.opacity = '1';
+        jokerShowing.style.transform = 'translateX(100px)'; // Entra desde la izquierda
+        
+        // 2. Transición a "arrojando.png" y mostrar "TIME!" (en 0.5s)
+        setTimeout(() => {
+            jokerShowing.style.opacity = '0'; // Oculta el showing
+            
+            jokerThrowing.style.opacity = '1'; // Muestra el throwing
+            jokerThrowing.style.transform = 'translateX(100px)'; // Mantiene la posición del throwing
+            
+            // Muestra el texto TIME! y activa el parpadeo
+            timeMessage.style.display = 'block';
+            timeMessage.classList.add('flickering');
+
+        }, 500); // 0.5 segundos: el joker ya está dentro
+
+        // 3. Desaparecer todo después de 1.5s de parpadeo (0.5s + 1.5s = 2.0s)
+        setTimeout(() => {
+            jokerThrowing.style.opacity = '0';
+            jokerThrowing.style.transform = 'translateX(0)'; 
+            jokerContainer.style.display = 'none';
+            
+            // Oculta el mensaje
+            timeMessage.style.display = 'none';
+            timeMessage.classList.remove('flickering');
+            
+            // Limpia estilos de la imagen showing para la próxima animación
+            jokerShowing.style.transform = 'translateX(0)';
+            jokerShowing.style.transition = 'none';
+
+        }, 2000); // 2.0 segundos totales (1.5 segundos de "TIME!" visible)
+      }
+
+
+      function listenToEverything() {
+        onValue(ref(db, `${team}/meta/timer`), (snapshot) => {
+            const timerData = snapshot.val();
+            const timerDisplay = document.getElementById('timer-display');
+            clearInterval(timerInterval); // Siempre limpia el intervalo anterior
+
+            if (timerData) {
+                const endTime = timerData.startTime + timerData.duration;
+                
+                // MODIFICADO: Añadimos un parámetro para la comprobación inicial
+                function updateTimer(isInitialCheck = false) { 
+                    const now = Date.now();
+                    const timeLeft = Math.round((endTime - now) / 1000);
+                    
+                    if (timeLeft > 0) {
+                        timerDisplay.textContent = timeLeft;
+                        timerDisplay.classList.remove('hidden');
+                    } else {
+                        // El temporizador ha terminado
+                        timerDisplay.classList.add('hidden');
+                        clearInterval(timerInterval);
+                        
+                        // FIX: Solo reproducir el sonido si NO es la comprobación inicial.
+                        // Esto asegura que solo se reproduzca al llegar a cero, y no si un usuario entra a una sala con un timer expirado.
+                        if (!isInitialCheck) {
+                             playTimerEndSound(); 
+                        }
+
+                        // FIX: El PO es el único que debe limpiar el valor en la DB al terminar, 
+                        // para que otros usuarios que se conecten no vean datos obsoletos.
+                        if (role === 'po') {
+                            set(ref(db, `${team}/meta/timer`), null);
+                        }
+                        
+                        return timeLeft; // Devolver el tiempo restante
+                    }
+                    return timeLeft;
+                }
+                
+                // FIX: Comprueba el tiempo restante inmediatamente.
+                const initialTimeLeft = updateTimer(true); 
+
+                // FIX: Solo se inicia el intervalo si aún queda tiempo.
+                // Esto evita el doble 'trigger' si el tiempo ya ha expirado en la carga inicial.
+                if (initialTimeLeft > 0) {
+                    timerInterval = setInterval(updateTimer, 1000);
+                }
+
+            } else {
+                timerDisplay.classList.add('hidden');
+            }
         });
-
         onValue(ref(db, `${team}/votes`), (snapshot) => {
           const data = snapshot.val() || {};
           const currentUserCard = data[name];
@@ -1174,6 +875,59 @@
           }
           currentVotes = data;
           updateVoteTable(currentVotes);
+        });
+
+        onValue(ref(db, `${team}/meta/revealed`), (snapshot) => {
+          revealed = snapshot.val() === true;
+          updateVoteTable(currentVotes);
+          updateCardsState();
+        });
+
+        onValue(ref(db, `${team}/connections`), (snapshot) => {
+          const conexiones = snapshot.val() || {};
+          const now = Date.now();
+          const activos = Object.entries(conexiones)
+            .filter(([_, data]) => now - data.lastSeen < 35000)
+            .map(([nombre, data]) => ({ nombre, role: data.role }));
+          renderMesa(activos);
+        });
+
+        onValue(ref(db, `${team}/meta/roomTitle`), (snapshot) => {
+            const titleDisplay = document.getElementById('room-title-display');
+            const title = snapshot.val();
+            if (title) {
+                titleDisplay.textContent = `📝 Tema: ${title}`;
+                titleDisplay.classList.remove('hidden');
+            } else {
+                titleDisplay.classList.add('hidden');
+            }
+        });
+
+        onValue(ref(db, `${team}/meta/timer`), (snapshot) => {
+            const timerData = snapshot.val();
+            const timerDisplay = document.getElementById('timer-display');
+            clearInterval(timerInterval);
+
+            if (timerData) {
+                const endTime = timerData.startTime + timerData.duration;
+                
+                function updateTimer() {
+                    const now = Date.now();
+                    const timeLeft = Math.round((endTime - now) / 1000);
+                    if (timeLeft > 0) {
+                        timerDisplay.textContent = timeLeft;
+                        timerDisplay.classList.remove('hidden');
+                    } else {
+                        timerDisplay.classList.add('hidden');
+                        clearInterval(timerInterval);
+                        playTimerEndSound(); // Llama a la nueva función de animación y sonido
+                    }
+                }
+                updateTimer();
+                timerInterval = setInterval(updateTimer, 1000);
+            } else {
+                timerDisplay.classList.add('hidden');
+            }
         });
       }
 
@@ -1208,51 +962,59 @@
         }
       }
 
+      // MODIFICADO: Función de renderizado de la mesa inteligente
       function renderMesa(personas) {
         const container = document.getElementById('mesa-container');
-        container.innerHTML = '';
         const radiusX = container.offsetWidth / 2 - 40;
         const radiusY = container.offsetHeight / 2 - 40;
         const centerX = container.offsetWidth / 2;
         const centerY = container.offsetHeight / 2;
-
         const total = personas.length;
+
+        const activeNames = new Set(personas.map(p => p.nombre));
+        
+        // Eliminar participantes que ya no están
+        container.querySelectorAll('.persona').forEach(el => {
+            if (!activeNames.has(el.dataset.name)) {
+                el.remove();
+            }
+        });
+
+        // Añadir o actualizar participantes
         personas.forEach((persona, i) => {
-          const angle = (2 * Math.PI * i) / total;
-          const x = centerX + radiusX * Math.cos(angle);
-          const y = centerY + radiusY * Math.sin(angle);
+            const angle = (2 * Math.PI * i) / total;
+            const x = centerX + radiusX * Math.cos(angle);
+            const y = centerY + radiusY * Math.sin(angle);
+            
+            let div = container.querySelector(`#persona-${persona.nombre.replace(/\s+/g, '-')}`);
+            
+            if (!div) { // Si la persona no existe, crearla
+                div = document.createElement('div');
+                div.id = `persona-${persona.nombre.replace(/\s+/g, '-')}`;
+                div.dataset.name = persona.nombre;
+                div.className = `persona ${persona.role} entering`; // Añadir clase de animación
 
-          const div = document.createElement('div');
-          div.className = `persona ${persona.role}`;
-          div.style.left = `${x}px`;
-          div.style.top = `${y}px`;
+                const icon = document.createElement('div');
+                icon.className = 'icono';
+                const label = document.createElement('div');
+                label.className = 'nombre';
+                label.textContent = persona.nombre;
 
-          const icon = document.createElement('div');
-          icon.className = 'icono';
-          const label = document.createElement('div');
-          label.className = 'nombre';
-          label.textContent = persona.nombre;
-
-          div.appendChild(icon);
-          div.appendChild(label);
-          container.appendChild(div);
+                div.appendChild(icon);
+                div.appendChild(label);
+                container.appendChild(div);
+            }
+            
+            // Actualizar posición
+            div.style.left = `${x}px`;
+            div.style.top = `${y}px`;
         });
       }
 
-      // === MANEJO DEL MODAL DE AYUDA ===
       const helpButton = document.getElementById('help-button');
       const imageModal = document.getElementById('image-modal');
-
-      helpButton.addEventListener('click', () => {
-        imageModal.classList.remove('hidden');
-      });
-
-      imageModal.addEventListener('click', (event) => {
-        // Cierra el modal solo si se hace clic en el fondo (overlay)
-        if (event.target === imageModal) {
-          imageModal.classList.add('hidden');
-        }
-      });
+      helpButton.addEventListener('click', () => { imageModal.classList.remove('hidden'); });
+      imageModal.addEventListener('click', (event) => { if (event.target === imageModal) { imageModal.classList.add('hidden'); } });
 
     </script>
   </div>
@@ -1278,6 +1040,6 @@
 
 </body>
 <footer id="footer">
-  By Fran - v2.1 (Oct 2025) - <a href=" https://www.linkedin.com/in/francoleodg" target="_blank" style="color: #ff6b6b; text-decoration: none;">LinkedIn</a>
+  By Fran - v2.3 (Oct 2025) - <a href=" https://www.linkedin.com/in/francoleodg" target="_blank" style="color: #ff6b6b; text-decoration: none;">LinkedIn</a>
 </footer>
 </html>
