@@ -13,6 +13,8 @@ FIXES:
 
 -Las falling cards ahora se difuminan mas al pasar por detrás del tablero, para evitar foco de atención en elementos secundarios.
 
+-Ya no se permite que ingresen mas de un rol de PO por sala, esto evita que se pueda ingresar a revelar votos de forma indiscriminada.
+
 AGREGADOS:
 
 - Ahora se tiene a JAVI, quien mencionara en la primer pantalla una invitación a participar, y en la segunda pantalla te advertirá de los roles y los votos.
@@ -30,5 +32,6 @@ AGREGADOS:
 -Se agrego visualmente la version actual del proyecto en el footer.
 
 -Se agrego animación inicial de carga al momento de abrir la pagina, utilizado para otorgar 2 segundos mas al resto de los elementos para el DOM.
+
 
 -Ahora el PO, Espectador y Miembro se discriminan con logos distintos en la mesa con una CORONA, un par de OJOS y SILUETA respectivamente.
