@@ -33,5 +33,7 @@ AGREGADOS:
 
 -Se agrego animación inicial de carga al momento de abrir la pagina, utilizado para otorgar 2 segundos mas al resto de los elementos para el DOM.
 
+-Se agrego icono (favicon) a la pagina para mejorar la estetica de la misma en las pestanias del navegador
 
 -Ahora el PO, Espectador y Miembro se discriminan con logos distintos en la mesa con una CORONA, un par de OJOS y SILUETA respectivamente.
+
