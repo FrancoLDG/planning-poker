@@ -5,7 +5,7 @@ Permite crear salas, elegir roles (PO, Team Member o Espectador), votar utilizan
 
 🕹️ Uso
 
-Accedé al sitio publicado.
+Accedé al sitio publicado. ----------> https://francoldg.github.io/planning-poker/
 
 Elegí un equipo y luego tu rol.
 
