@@ -1,4 +1,33 @@
 Change Log:
+---------------------------VERSION 2.3.5------------------------------------------
+✨ Nuevas Características (Features)
+
+
+>	Gestión de Backlog	Se añade una sección completa de Backlog en los controles del PO. Permite añadir tareas (addTask), activar una tarea para votación (setActiveTask), y eliminar tareas (deleteTask) a través de la base de datos. La tarea activa sobrescribe el título de la sala.
+>	Alertas de Facilitación	El panel de votación ahora incluye alertas automáticas para el PO al revelar los votos: Alerta de Gran Discrepancia (si el voto máximo es al menos el doble del mínimo y mayor a 5) y Alerta de Pregunta (si hay votos con '❓').
+>	Estado de Participante	Los iconos de los participantes en la mesa ahora tienen un indicador visual: un '✔️' verde si han votado y un cambio de opacidad si están inactivos (última conexión > 30s).
+>	Avatares y Personalización	Se agrega un selector de Avatar (<div id="avatar-selector">) en el formulario de nombre, permitiendo a los usuarios elegir un emoji (🚀, 💻, 💡, etc.) que se muestra en su ícono de la mesa.
+>	Modo Anónimo	El PO ahora puede activar un Modo Anónimo con un toggle switch. Cuando está activo y los votos no se han revelado, los nombres de los participantes son reemplazados por "Participante 1, Participante 2, etc." en la tabla de votos.
+>	Tutorial para el PO	Al iniciar sesión como PO por primera vez, se activa un Tutorial Guiado con spotlight y un asistente (Fran) que explica el uso de cada control (Revelar, Reset, Timer, Backlog, Anónimo).
+
+
+
+🛠️ Correcciones y Mejoras (Fixes & Improvements)
+
+>	Estructura	El código fue refactorizado y dividido en tres archivos (HTML, CSS y JS) mejorando la modularidad y el mantenimiento. Se eliminó el <style> y <script> en línea del HTML original.
+>	Diseño Responsivo	Se realizó un ajuste fino de las dimensiones en style.css para optimizar el espacio: reducción de padding, margin y tamaños de fuente (h1, h2, p), mejorando la densidad de información y la visualización en móvil.
+>	Layout Votación	Se reestructuró la zona de votación, colocando el resultado (#result) debajo de la mesa y moviendo los controles del PO a la columna derecha.
+>	Mesa de Votos Avanzada	La tabla de votos (#vote-table) ahora soporta un diseño de múltiples columnas (hasta 3) utilizando CSS Grid para manejar un mayor número de participantes sin un scroll vertical excesivo en la tabla.
+>	Timer End Logic	Se corrige el bug donde el sonido y la animación del Joker/TIME! se activaban si un usuario se unía a una sala con un temporizador ya expirado. Ahora, la animación solo se activa al llegar a cero.
+>	Limpieza de Inactivos	El botón "Limpiar Inactivos" (resetParticipantes) ahora solo elimina a los usuarios que han estado inactivos por un tiempo específico, asegurando que solo los participantes activos queden en la sesión.
+>	PO onDisconnect	Se garantiza que si el PO se desconecta de manera abrupta, las metadatas de la sala (Título de Sala, Temporizador, Modo Anónimo) no son eliminadas de la base de datos (se usa onDisconnect().cancel() en el PO), lo que permite que el nuevo PO asuma los controles sin perder el estado de la sesión.
+>	Consenso y Agrupación (Anónimo)	Al revelar en Modo Anónimo, la sección de resultados muestra un resumen de los resultados agrupados (ej: "3 votos para 5", "2 votos para 8") además del puntaje más votado, facilitando el análisis del consenso.
+>	Fix: Javi y Avatares	Se corrige la visualización de los avatares en la mesa; el ícono genérico (👤) es reemplazado por el emoji de avatar seleccionado. El PO ya no muestra el ícono genérico, solo la corona (👑).
+
+
+
+
+---------------------------VERSION 2.3------------------------------------------
 
 FIXES:
 - Se arreglo problema visual de las falling cards las cuales aparecian 1 Segundo en el top de la pantalla para luego empezar a caer, ahora aparecen directamente cayendo y se van difuminando en el recorrido.
@@ -36,4 +65,5 @@ AGREGADOS:
 -Se agrego icono (favicon) a la pagina para mejorar la estetica de la misma en las pestanias del navegador
 
 -Ahora el PO, Espectador y Miembro se discriminan con logos distintos en la mesa con una CORONA, un par de OJOS y SILUETA respectivamente.
+
 
