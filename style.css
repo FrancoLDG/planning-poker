@@ -1,0 +1,795 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+  /* MODIFICADO: Reducción de padding vertical*/
+  padding: 1rem; 
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #333;
+  position: relative;
+  overflow-x: hidden;
+  /* MODIFICADO: Eliminar scroll principal*/
+  overflow-y: hidden; 
+}
+
+/* === Pantalla de carga === */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #6D63E8;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 800px;
+  transition: opacity 0.5s ease;
+}
+
+.loading-card {
+  width: 120px;
+  height: 170px;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: flip-and-fade-out 2.5s ease-in-out forwards;
+}
+
+.loading-card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 5rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.front {
+  background: linear-gradient(145deg, #f0f0f0, #ffffff);
+  color: #764ba2;
+}
+
+.back {
+  background: linear-gradient(145deg, #ff6b6b, #ee5a24);
+  color: white;
+  transform: rotateY(180deg);
+}
+
+@keyframes flip-and-fade-out {
+  0% { transform: rotateY(0deg); opacity: 1; }
+  40% { transform: rotateY(180deg); opacity: 1; }
+  80% { transform: rotateY(180deg); opacity: 1; }
+  100% { transform: rotateY(180deg) scale(0.8); opacity: 0; }
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 105, 180, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.2) 0%, transparent 50%);
+  z-index: -1;
+}
+.falling-cards {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.falling-card {
+  position: absolute;
+  width: 40px;
+  height: 55px;
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  opacity: 0; /* Inicia invisible */
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* MODIFICADO: Keyframes de caída para inicio suave */
+@keyframes fall1 { 0% { transform: translateY(-100px) rotate(0deg); opacity: 0; } 10% { opacity: 0.8; } 70% { opacity: 0.6; } 100% { transform: translateY(calc(100vh + 100px)) rotate(180deg); opacity: 0; } }
+@keyframes fall2 { 0% { transform: translateY(-100px) rotate(0deg) scale(0.8); opacity: 0; } 10% { opacity: 0.7; } 60% { opacity: 0.5; } 100% { transform: translateY(calc(100vh + 100px)) rotate(-160deg) scale(1.2); opacity: 0; } }
+@keyframes fall3 { 0% { transform: translateY(-100px) rotate(45deg); opacity: 0; } 10% { opacity: 0.9; } 80% { opacity: 0.4; } 100% { transform: translateY(calc(100vh + 100px)) rotate(225deg); opacity: 0; } }
+@keyframes fall4 { 0% { transform: translateY(-100px) rotate(-30deg) scale(1.1); opacity: 0; } 10% { opacity: 0.6; } 50% { opacity: 0.8; } 100% { transform: translateY(calc(100vh + 100px)) rotate(150deg) scale(0.9); opacity: 0; } }
+@keyframes fall5 { 0% { transform: translateY(-100px) rotate(90deg); opacity: 0; } 10% { opacity: 0.7; } 90% { opacity: 0.3; } 100% { transform: translateY(calc(100vh + 100px)) rotate(-90deg); opacity: 0; } }
+
+/* === Elementos Principales === */
+h1 {
+  /* MODIFICADO: Reducción de tamaño de fuente y margen*/
+  font-size: 2.5rem; 
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  margin-bottom: 0.3rem;
+}
+h1 a { color: white; text-decoration: none; transition: text-shadow 0.3s; }
+h1 a:hover { text-shadow: 0 4px 30px rgba(255,255,255,0.5); }
+
+/* MODIFICADO: Reducción de tamaño de h2 y h3*/
+h2, h3 { color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.3); margin: 0.5rem 0; }
+h2 { font-size: 1.2rem; font-weight: 500; } 
+h3 { font-size: 1.4rem; font-weight: 600; } 
+
+/* MODIFICADO: Reducción de tamaño de párrafo*/
+p { font-size: 1.1rem; font-weight: 500; color: white; margin-bottom: 1rem; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+
+.container-box {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  /* MODIFICADO: Reducción de padding*/
+  padding: 1.5rem; 
+  /* MODIFICADO: Reducción de margen*/
+  margin: 1rem auto; 
+  max-width: 80rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: slideIn 0.6s ease-out;
+}
+
+@keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+button { padding: 1rem 2.5rem; font-size: 1.2rem; font-weight: 600; border: none; border-radius: 50px; margin: 0.8rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; font-family: 'Poppins', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+button::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: left 0.5s; }
+button:hover::before { left: 100%; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+#team-selection button { background: linear-gradient(45deg, #ff6b6b, #ee5a24); color: white; box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
+#team-selection button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 35px rgba(255, 107, 107, 0.6); }
+
+#role-selection button { background: linear-gradient(45deg, #4834d4, #686de0); color: white; box-shadow: 0 8px 25px rgba(72, 52, 212, 0.4); }
+#btn-spectator { background: linear-gradient(45deg, #1dd1a1, #10ac84); box-shadow: 0 8px 25px rgba(29, 209, 161, 0.4); }
+#role-selection button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 35px rgba(72, 52, 212, 0.6); }
+
+#po-controls button { background: linear-gradient(45deg, #0abde3, #006ba6); color: white; box-shadow: 0 8px 25px rgba(10, 189, 227, 0.4); margin: 0.5rem; }
+#po-controls button:hover:not(:disabled) { transform: translateY(-2px) scale(1.03); box-shadow: 0 12px 30px rgba(10, 189, 227, 0.6); }
+
+/* CORRECCIÓN IMPLEMENTADA PREVIAMENTE: Estilo para agrupar el texto "Modo Anónimo" y el toggle switch */
+.anonymous-toggle-group {
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px; 
+    margin-top: 1.5rem; /* Ajuste para darle espacio al texto del PO */
+    margin-bottom: 1rem; 
+}
+/* Asegurar que el 'p' dentro del grupo se vea bien y no tenga margen excesivo*/
+.anonymous-toggle-group p {
+    font-size: 1rem; 
+    color: white; 
+    margin: 0;
+    font-weight: 500;
+}
+/* Eliminar el margen por defecto del switch si lo tiene */
+#po-controls .toggle-switch {
+    margin: 0; 
+}
+
+input[type="text"] { font-size: 1.2rem; padding: 1rem 1.5rem; width: 300px; margin: 0.5rem; border: none; border-radius: 50px; background: rgba(255, 255, 255, 0.9); box-shadow: inset 0 2px 10px rgba(0,0,0,0.1); font-family: 'Poppins', sans-serif; text-align: center; transition: all 0.3s ease; }
+input[type="text"]:focus { outline: none; box-shadow: inset 0 2px 10px rgba(0,0,0,0.1), 0 0 0 3px rgba(255, 255, 255, 0.3); transform: scale(1.02); }
+
+#name-input button { background: linear-gradient(45deg, #00d2d3, #54a0ff); color: white; box-shadow: 0 8px 25px rgba(0, 210, 211, 0.4); }
+#name-input button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 35px rgba(0, 210, 211, 0.6); }
+
+.card { display: inline-block; border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 20px; padding: 1.5rem 1rem; margin: 0.8rem; cursor: pointer; width: 80px; height: 110px; font-size: 2rem; font-weight: 700; background: linear-gradient(145deg, #ffffff, #f0f0f0); box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.8); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; color: #333; }
+.card.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+.card::before { content: '♠️'; position: absolute; top: 8px; left: 8px; font-size: 0.8rem; opacity: 0.6; }
+.card::after { content: '♠️'; position: absolute; bottom: 8px; right: 8px; font-size: 0.8rem; opacity: 0.6; transform: rotate(180deg); }
+.card:hover:not(.disabled) { transform: translateY(-10px) scale(1.1) rotateZ(5deg); box-shadow: 0 20px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.8); border-color: rgba(255, 255, 255, 0.6); }
+.selected { border: 3px solid #ff6b6b !important; background: linear-gradient(145deg, #ff6b6b, #ee5a24) !important; color: white !important; transform: translateY(-5px) scale(1.05); box-shadow: 0 15px 35px rgba(255, 107, 107, 0.5), inset 0 1px 0 rgba(255,255,255,0.3); }
+
+/* ESTILOS AVATAR SELECTOR */
+#avatar-selector {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.avatar-option {
+    font-size: 2rem;
+    cursor: pointer;
+    transition: transform 0.2s, border 0.2s;
+    border: 4px solid transparent;
+    border-radius: 50%;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.avatar-option:hover {
+    transform: scale(1.1);
+}
+.avatar-option.selected-avatar {
+    border-color: #764ba2;
+    transform: scale(1.15);
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.5);
+}
+
+table { 
+    /* MODIFICADO: Reducción de margen*/
+    margin: 0.5rem auto; 
+    border-collapse: collapse; 
+    background: rgba(255, 255, 255, 0.9); 
+    border-radius: 15px; 
+    overflow: hidden; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+    backdrop-filter: blur(10px); 
+    /* AGREGADO: Altura máxima para la tabla contenedora */
+    max-height: 280px; 
+}
+
+/* MODIFICADO: Se agrega display: grid a la fila del thead para permitir el spanning */
+#vote-table thead tr {
+    display: grid;
+    /* Por defecto, 2 columnas de grilla (1 Name | 1 Vote) */
+    grid-template-columns: 1fr 1fr;
+}
+
+/* MODIFICADO: Reducción de padding de celdas*/
+th, td { border: none; padding: 0.6rem 1rem; font-weight: 500; }
+th { background: linear-gradient(45deg, #667eea, #764ba2); color: white; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+td { background: rgba(255, 255, 255, 0.8); transition: background 0.3s ease; }
+tr:nth-child(even) td { background: rgba(240, 240, 240, 0.8); }
+tr:hover td { background: rgba(102, 126, 234, 0.1); }
+
+/* Resaltados de tabla - Funcionalidad 2 & 4 */
+.highlight-high { background-color: rgba(255, 99, 71, 0.2) !important; } /* Rojo Suave */
+.highlight-low { background-color: rgba(60, 179, 113, 0.2) !important; } /* Verde Suave */
+.highlight-question { background-color: rgba(255, 255, 0, 0.2) !important; } /* Amarillo Suave */
+
+
+/* === IMPLEMENTACIÓN DEL LAYOUT MULTI-COLUMNA PARA TBODY (CORREGIDO) === */
+#vote-table tbody {
+    /* AGREGADO: Convertir el tbody a grid */
+    display: grid;
+    /* 2 columnas por participante (Nombre | Voto). Por defecto 1 participante por fila. */
+    grid-template-columns: 1fr 1fr; 
+    /* Las filas fluyen hacia abajo, lo que combinado con max-height, fuerza las columnas */
+    grid-auto-flow: row;
+    /* Altura MÁXIMA para 5 filas (~5 * 40px/row). Scroll vertical si excede 5 filas. */
+    max-height: 200px; 
+    overflow-y: auto;
+}
+
+/* 2 Columnas de Participantes (para 6 a 10 participantes) */
+#vote-table.multi-columna-2 tbody {
+    /* 4 columnas de grilla: (Nombre1 | Voto1) (Nombre2 | Voto2) */
+    grid-template-columns: 1fr 1fr 1fr 1fr; 
+    grid-auto-flow: row;
+    max-height: 200px; 
+}
+
+/* 3 Columnas de Participantes (para 11 a 15 participantes) */
+#vote-table.multi-columna-3 tbody {
+    /* 6 columnas de grilla: (Nombre1 | Voto1) (Nombre2 | Voto2) (Nombre3 | Voto3) */
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; 
+    grid-auto-flow: row;
+    max-height: 200px; 
+}
+
+/* Asegurar que cada TR se comporta como un ítem de la grilla */
+#vote-table tbody tr {
+    /* Mantiene el TR como un grupo de contenido, haciendo que sus hijos (TDs) se coloquen en la grilla. */
+    display: contents; 
+}
+
+/* --- T HEAD SPANNING FIX --- */
+
+/* Por defecto (multi-columna-1), ya se usan 1fr 1fr, por lo que grid-column: span 1 es implícito. */
+
+/* 2 Participant Columns - Ajustar THEAD para que NOMBRE y VOTO abarquen 2 columnas de grilla cada uno */
+#vote-table.multi-columna-2 thead tr {
+    grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 columnas de grilla */
+}
+#vote-table.multi-columna-2 thead th:nth-child(1) { 
+    grid-column: span 2; /* NOMBRE abarca Name1 y Name2 */
+}
+#vote-table.multi-columna-2 thead th:nth-child(2) { 
+    grid-column: span 2; /* VOTO abarca Vote1 y Vote2 */
+}
+
+/* 3 Participant Columns - Ajustar THEAD para que NOMBRE y VOTO abarquen 3 columnas de grilla cada uno */
+#vote-table.multi-columna-3 thead tr {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; /* 6 columnas de grilla */
+}
+#vote-table.multi-columna-3 thead th:nth-child(1) { 
+    grid-column: span 3; /* NOMBRE abarca Name1, Name2 y Name3 */
+}
+#vote-table.multi-columna-3 thead th:nth-child(2) { 
+    grid-column: span 3; /* VOTO abarca Vote1, Vote2 y Vote3 */
+}
+
+/* Estilos de bordes para simular las celdas de tabla */
+
+/* Celdas de Nombre (1ra, 3ra, 5ta, etc. TD dentro de la grilla) - Tienen borde a la derecha */
+#vote-table tbody td:nth-child(2n + 1) { 
+    border-right: 1px solid rgba(0,0,0,0.1);
+}
+/* Celdas de Voto (2da, 4ta, 6ta, etc.) - No tienen borde a la derecha */
+#vote-table tbody td:nth-child(2n) { 
+    border-right: none;
+}
+
+/* En multi-columna, el último TD de Voto debe tener el borde derecho removido */
+#vote-table.multi-columna-2 tbody td:nth-child(4n) { /* Voto de Participante 2 */
+    border-right: none !important;
+}
+#vote-table.multi-columna-3 tbody td:nth-child(6n) { /* Voto de Participante 3 */
+    border-right: none !important;
+}
+
+#result { 
+    /* MODIFICADO: Se ajusta el margen para el nuevo lugar (debajo de la mesa) */
+    margin-top: 1rem; 
+    margin-bottom: 0;
+    font-weight: 700; 
+    font-size: 1.4rem; 
+    color: white; 
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3); 
+    padding: 1rem; 
+    background: linear-gradient(45deg, #00d2d3, #54a0ff); 
+    border-radius: 20px; 
+    box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4); 
+    animation: pulse 2s infinite; 
+    /* Asegurar que se vea bien en el left-panel */
+    width: 100%; 
+    max-width: 450px; 
+}
+/* Estilos para alertas de facilitación - Funcionalidad 2 & 4 */
+.alert-discrepancy { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
+.alert-break { background: linear-gradient(45deg, #ffd700, #ffa502); }
+
+
+@keyframes pulse { 0% { box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4); } 50% { box-shadow: 0 15px 40px rgba(0, 210, 211, 0.6); } 100% { box-shadow: 0 10px 30px rgba(0, 210, 211, 0.4); } }
+
+/* MODIFICADO: Reducción de tamaño de mesa*/
+#mesa-container { 
+    margin: 0.5rem auto; 
+    width: 400px; 
+    height: 180px; 
+    border: 6px solid rgba(255, 255, 255, 0.4); 
+    border-radius: 50% / 40%; 
+    position: relative; 
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05)); 
+    backdrop-filter: blur(20px); 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3); 
+}
+.persona { position: absolute; text-align: center; width: 70px; transform: translate(-50%, -50%); transition: left 0.5s ease-out, top 0.5s ease-out; }
+
+/* MODIFICADO: Animación controlada por JS */
+.persona.entering { animation: personaEntrance 0.6s ease-out; }
+
+@keyframes personaEntrance { from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+
+/* MODIFICADO: Estilos del ícono para soportar avatares y estados */
+.persona .icono { 
+    width: 50px; 
+    height: 50px; 
+    background: linear-gradient(45deg, #ff6b6b, #ffa502); 
+    border-radius: 50%; 
+    margin: 0 auto; 
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4), inset 0 2px 5px rgba(255,255,255,0.3); 
+    position: relative; 
+    transition: all 0.3s ease;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 2rem; /* Tamaño para el avatar/emoji */
+}
+
+/* Removido el ::before genérico para usar el avatar */
+.persona.po .icono { background: linear-gradient(45deg, #ffd700, #ffed4e); }
+.persona.spectator .icono { background: linear-gradient(45deg, #1dd1a1, #10ac84); }
+
+.persona:hover .icono { transform: scale(1.1); box-shadow: 0 12px 35px rgba(255, 107, 107, 0.6), inset 0 2px 5px rgba(255,255,255,0.4); }
+.persona .nombre { font-size: 0.7rem; font-weight: 600; margin-top: 0.5rem; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.3); background: rgba(0,0,0,0.2); padding: 0.2rem 0.7rem; border-radius: 15px; backdrop-filter: blur(10px); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ESTADO: Votado - Funcionalidad 3 */
+.persona.voted .icono {
+    border: 3px solid #1dd1a1;
+    box-shadow: 0 8px 25px rgba(29, 209, 161, 0.6);
+}
+.persona.voted .icono::after {
+    content: '✔️';
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    font-size: 0.8rem;
+    background: #1dd1a1;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* ESTADO: Inactivo - Funcionalidad 3 */
+.persona.inactive {
+    opacity: 0.4;
+}
+
+/* ESTADO: PO - Funcionalidad 3 */
+.persona.po .icono::before {
+  content: '👑';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+}
+
+#cards { 
+    /* MODIFICADO: Reducción de margen y padding*/
+    margin: 0.5rem 0; 
+    padding: 1rem; 
+    background: rgba(255, 255, 255, 0.1); 
+    border-radius: 20px; 
+}
+
+.error-message { background: rgba(255, 0, 0, 0.15); border: 2px solid rgba(255, 0, 0, 0.5); color: white; padding: 1rem; border-radius: 15px; margin: 1rem auto; max-width: 500px; font-weight: 500; animation: shake 0.5s; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+/* === Layout de la pantalla de votación === */
+#main-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* MODIFICADO: Reducción de gap y margin*/
+  gap: 0.3rem;
+  margin-bottom: 0.8rem;
+}
+
+#poker-area {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  /* MODIFICADO: Reducción de gap*/
+  gap: 1rem;
+  /* MODIFICADO: Reducción de padding*/
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  /* AGREGADO: Efecto de desenfoque de fondo */
+  backdrop-filter: blur(5px); 
+}
+
+.poker-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* MODIFICADO: Reducción de gap*/
+  gap: 0.8rem;
+}
+
+#left-panel {
+  /* MODIFICADO: Se reduce el flex-basis*/
+  flex: 1 1 400px; 
+  min-width: 300px;
+}
+
+#right-panel {
+  /* MODIFICADO: Se reduce el flex-basis*/
+  flex: 1 1 450px;
+  min-width: 320px;
+}
+
+/* ESTILOS DE BACKLOG - Funcionalidad 1 */
+#backlog-management {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+.backlog-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+    text-align: left;
+    max-width: 100%;
+}
+.backlog-item.active-task {
+    background: linear-gradient(45deg, #ffe0b2, #ffcc80);
+    border: 2px solid #ff9800;
+    font-weight: 600;
+}
+.backlog-title {
+    flex-grow: 1;
+    margin-right: 1rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.backlog-actions button {
+    padding: 0.3rem 0.8rem !important;
+    font-size: 0.8rem !important;
+    margin: 0 0.2rem !important;
+    border-radius: 5px !important;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.btn-vote-task { background: linear-gradient(45deg, #4caf50, #81c784) !important; box-shadow: none !important; color: white !important; }
+.btn-delete-task { background: linear-gradient(45deg, #f44336, #e57373) !important; box-shadow: none !important; color: white !important; }
+
+/* ESTILOS DE MODO ANÓNIMO - Funcionalidad 5 */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin: 0.5rem;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: #2196F3;
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+
+@media (max-width: 768px) {
+  body { padding: 1rem !important; }
+  .container-box, #poker-area { padding: 1.2rem !important; margin: 1rem auto !important; }
+  h1 { font-size: 2.2rem !important; margin-bottom: 1rem !important; }
+  h2 { font-size: 1.2rem !important; }
+  h3 { font-size: 1.5rem !important; }
+  p { font-size: 1rem !important; margin-bottom: 1rem !important; }
+  button { padding: 0.6rem 1.5rem !important; font-size: 1rem !important; margin: 0.4rem !important; }
+  input[type="text"] { font-size: 1rem !important; padding: 0.6rem 1rem !important; width: 220px !important; margin-bottom: 1rem !important; }
+  .card { width: 60px !important; height: 80px !important; font-size: 1.5rem !important; margin: 0.5rem !important; }
+  #mesa-container { width: 350px !important; height: 180px !important; margin: 1rem auto !important; }
+  #result { font-size: 1.2rem !important; padding: 1rem !important; margin-top: 1rem !important; }
+}
+
+#footer { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; background: rgba(0, 0, 0, 0.4); color: white; padding: 0.5rem; font-size: 0.9rem; font-family: 'Poppins', sans-serif; backdrop-filter: blur(6px); z-index: 9999; }
+
+.javi-container { position: fixed; bottom: 50px; right: 20px; display: flex; align-items: flex-end; z-index: 1000; max-width: 650px; }
+.javi-img { width: 228px; height: 228px; margin-left: 10px; }
+.dialog-bubble { background: rgba(255, 255, 255, 0.95); color: #333; padding: 1.2rem; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 500; line-height: 1.6; border: 2px solid #764ba2; position: relative; max-width: 300px; min-height: 120px; }
+.dialog-bubble::after { content: ''; position: absolute; bottom: 20px; right: -12px; width: 0; height: 0; border-top: 12px solid transparent; border-bottom: 12px solid transparent; border-left: 12px solid #764ba2; }
+.dialog-bubble::before { content: ''; position: absolute; bottom: 20px; right: -10px; width: 0; height: 0; border-top: 12px solid transparent; border-bottom: 12px solid transparent; border-left: 12px solid rgba(255, 255, 255, 0.95); z-index: 1; }
+
+#help-button { position: fixed; bottom: 50px; left: 20px; width: 50px; height: 50px; background: linear-gradient(45deg, #ff6b6b, #ee5a24); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 1000; transition: all 0.3s ease; }
+#help-button:hover { transform: scale(1.1) rotate(20deg); box-shadow: 0 8px 30px rgba(255, 107, 107, 0.5); }
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1001; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-content { background: white; padding: 2rem; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+.modal-content img { max-width: 90%; height: auto; border-radius: 10px; }
+.modal-caption { margin-top: 1rem; font-size: 1.1rem; font-weight: 500; color: #333; max-width: 600px; }
+
+/* === Estilos para el Título de Sala y Temporizador === */
+#room-title-display {
+    /* MODIFICADO: Reducción de tamaño y padding*/
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    padding: 0.4rem 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    margin-top: 0.3rem;
+    /* FIX: Forzar la visibilidad del título activo */
+    display: block !important; 
+}
+#po-title-controls, #po-timer-controls {
+    /* MODIFICADO: Reducción de margen y padding*/
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+#timer-display {
+    position: fixed;
+    bottom: 110px; 
+    left: 20px; 
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    font-size: 2rem;
+    font-weight: 700;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    z-index: 9998;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* === ANIMACIÓN JOKER Y TIME! === */
+@font-face {
+    /* ADVERTENCIA: Esta fuente requiere que el archivo 'PressStart2P-Regular.ttf' esté disponible en la misma ruta que el CSS. */
+    font-family: 'PressStart2P';
+    src: url('PressStart2P-Regular.ttf') format('truetype'); 
+}
+
+#joker-container {
+    position: fixed;
+    /* Ajuste de posición: arriba del timer */
+    bottom: 0; /* Lo coloco abajo del todo para que la imagen sobresalga del borde inferior de la pantalla */
+    left: 0;
+    width: 250px; 
+    height: 300px;
+    z-index: 10000;
+    pointer-events: none;
+    display: none; /* Controlado por JS */
+}
+
+#joker-container img {
+    position: absolute;
+    bottom: 0;
+    left: -100px; 
+    width: 250px;
+    height: auto;
+}
+
+/* Animación de entrada: desliza desde la izquierda y luego desaparece */
+@keyframes slideInAndOut {
+    0% { transform: translateX(-100%); opacity: 0; }
+    10% { transform: translateX(0); opacity: 1; }
+    90% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-100%); opacity: 0; }
+}
+
+#time-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'PressStart2P', monospace; 
+    font-size: 6rem;
+    color: #ff0000;
+    text-shadow: 4px 4px 0 #000, -2px -2px 0 #ffff00;
+    z-index: 10001;
+    letter-spacing: 5px;
+}
+
+/* Animación de parpadeo (flicker) */
+@keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; text-shadow: 4px 4px 0 #000, -2px -2px 0 #ffff00; }
+    20%, 24%, 55% { opacity: 0.8; text-shadow: 2px 2px 0 #000, -1px -1px 0 #ffaa00; }
+    40% { opacity: 0.9; text-shadow: 6px 6px 0 #000, -3px -3px 0 #ffffff; }
+}
+
+.flickering {
+    animation: flicker 0.2s infinite;
+}
+
+/* === ESTILOS DEL TUTORIAL PO (CORREGIDOS) === */
+#tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Oscurece el fondo */
+    z-index: 10002; /* Fondo oscuro */
+    cursor: pointer;
+    transition: background 0.3s ease;
+    
+    /* Propiedades de MASKING para crear el agujero circular. Los valores serán actualizados por JS */
+    -webkit-mask-image: none; 
+    mask-image: none;
+    
+    /* Esto permite que las áreas transparentes (el agujero) sean click-through si fuera necesario, pero lo manejamos con el z-index */
+    pointer-events: auto; 
+}
+
+/* Contenedor del foco (Spotlight) - Ahora es el ANILLO VISUAL */
+#tutorial-spotlight {
+    position: fixed; /* Debe ser fixed para seguir el elemento */
+    background: transparent;
+    border: 3px solid #ffed4e; /* El color del anillo */
+    border-radius: 50%; /* Siempre circular */
+    box-shadow: 0 0 0 10000px rgba(0, 0, 0, 0); 
+    z-index: 10003; /* El anillo debe estar entre el overlay y el diálogo */
+    opacity: 0; /* Controlado por JS */
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Animación de la posición y tamaño */
+}
+
+/* Diálogo del mensaje */
+#tutorial-dialog {
+    position: absolute;
+    max-width: 350px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    z-index: 10004; /* El mensaje debe estar encima de todo */
+    text-align: left;
+    transform: none; /* Quitamos el transform para cálculos precisos en JS */
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+}
+
+#tutorial-dialog #tutorial-fran-img {
+    float: right;
+    width: 80px;
+    height: auto;
+    margin-left: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#tutorial-dialog #tutorial-message {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+#tutorial-dialog #tutorial-counter {
+    clear: both;
+    text-align: right;
+    font-size: 0.9rem;
+    color: #764ba2;
+    font-weight: 600;
+    margin-top: 10px;
+    padding-top: 5px;
+    border-top: 1px solid #eee;
+}
