@@ -19,12 +19,23 @@
     <div class="falling-cards" id="falling-cards"></div>
     
     <div id="team-selection" class="container-box">
-      <p>🎯 Seleccioná tu equipo:</p>
-      <button id="btn-desarrollo">🚀 Desarrollo</button>
-      <button id="btn-produccion">⚡ Producción</button>
-      <button id="btn-otro">🎪 Otro</button>
+        
+        <div id="room-input-area">
+            <p>✨ Ingresá el nombre de tu sala (o creala si no existe):</p>
+            <input type="text" id="room-name-input" placeholder="Ej: SP-20 MODO o Desarrollo">
+            <br>
+            <button onclick="checkAndSelectRoom()">🚀 Entrar a Sala</button> 
+        </div>
+        
+        <p style="margin-top: 2rem;">-- O --</p>
+        
+        <h3>Salas Activas 👇</h3>
+        <div id="active-rooms-list" class="list-container">
+          <p style="font-size: 1rem;">Cargando salas...</p>
+        </div>
+        
+        <div id="error-container"></div>
     </div>
-
     <div id="role-selection" class="container-box hidden">
       <p>👥 Elegí tu rol:</p>
       <button id="btn-po">🎪 PO</button>
@@ -61,7 +72,7 @@
           <h3>📊 Votaciones</h3>
           <table id="vote-table" class="multi-columna-1">
             <thead><tr><th>Nombre</th><th>Voto</th></tr></thead>
-            <tbody></tbody>
+            <tbody></tbod>
           </table>
           
           <div id="facilitation-alerts"></div> 
