@@ -15,13 +15,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// === Variables Globales ===
+// === Variables Globales y Constantes ===
 const fibonacci = [0, 1, 2, 3, 5, 8, 13, 21, 34, '?'];
 let team = '', name = '', role = '', selectedCard = null, revealed = false, currentVotes = {};
 let timerInterval = null, selectedAvatar = '🚀', currentActiveTask = null, allConnections = {}; 
 const avatars = ['🚀', '💻', '💡', '🧙‍♂️', '😎']; 
 let tutorialStep = 0; // Para el tutorial del PO
 const PO_TUTORIAL_KEY = 'PO_TUTORIAL_COMPLETED'; // Clave de localStorage para el tutorial
+
+// MODIFICADO: Constantes para la gestión de salas
+const PARTICIPANT_TIMEOUT_MS = 35000; // 35 segundos para considerar un participante activo
+const ROOM_TIMEOUT_MS = 180000; // 3 minutos (180,000 ms) para mantener la sala activa en el listado
 
 // === Funciones de UI y Efectos ===
 
@@ -186,14 +190,57 @@ function animateJokerTime() {
 
 // === Funciones de Lógica de la Aplicación y Firebase ===
 
-// 1. Conexión de usuario y mantenimiento de actividad
+// MODIFICADO: Mantenimiento de actividad y metadatos de sala
 function actualizarConexion() {
   if (name && team) {
+    const now = Date.now();
+    
+    // 1. Actualizar conexión del usuario
     set(ref(db, `${team}/connections/${name}`), { 
-      lastSeen: Date.now(),
+      lastSeen: now,
       role: role,
       avatar: selectedAvatar 
     });
+    
+    // 2. Actualizar meta de la sala (activeRooms/team)
+    
+    // Obtener la cuenta de miembros/POs activos y el PO actual
+    get(ref(db, `${team}/connections`)).then(snapshot => {
+        const connections = snapshot.val() || {};
+        let memberCount = 0;
+        let poName = '';
+        
+        Object.entries(connections).forEach(([userName, data]) => {
+            if (now - data.lastSeen < PARTICIPANT_TIMEOUT_MS) {
+                if (data.role === 'member' || data.role === 'po') {
+                    memberCount++;
+                }
+                if (data.role === 'po') {
+                    poName = userName;
+                }
+            }
+        });
+
+        // Solo actualizamos la sala si hay al menos 1 miembro/PO activo
+        if (memberCount > 0) {
+            update(ref(db, `activeRooms/${team}`), {
+                lastActive: now,
+                memberCount: memberCount,
+                poName: poName || 'Buscando PO'
+            });
+            
+            // Configurar onDisconnect para el PO
+            if (role === 'po') {
+                 // Si el PO se desconecta, se limpia su nombre de la meta de la sala inmediatamente
+                 onDisconnect(ref(db, `activeRooms/${team}/poName`)).set('Desconectado');
+            }
+            
+        } else {
+             // Si no hay participantes, forzar la eliminación después del timeout (aunque la lista usa su propio timer)
+             // Esto asegura que la metadata se limpia.
+             // La limpieza se realiza al leer la lista (renderActiveRooms)
+        }
+    }).catch(e => console.error("Error al obtener conexiones para actualizar sala:", e));
   }
 }
 
@@ -209,8 +256,19 @@ window.selectCard = function(value, element) {
 
 // 2. Lógica de Navegación
 
+// NUEVA FUNCIÓN: Unirse a sala desde el input o la lista.
+window.checkAndSelectRoom = function() {
+    const roomNameInput = document.getElementById('room-name-input');
+    const roomName = roomNameInput.value.trim();
+    if (!roomName) {
+        showError('¡Debes ingresar un nombre de sala!');
+        return;
+    }
+    selectTeam(roomName);
+}
+
 function selectTeam(selectedTeam) {
-  team = selectedTeam;
+  team = selectedTeam.trim();
   document.getElementById('team-selection').classList.add('hidden');
   
   // Ocultar Javi 1 y mostrar Javi 2
@@ -245,12 +303,19 @@ window.confirmName = async function confirmName() {
     const connections = connectionsSnapshot.val() || {};
     const now = Date.now();
     const activePO = Object.entries(connections).find(([userName, data]) => 
-      userName !== name && data.role === 'po' && now - data.lastSeen < 35000
+      userName !== name && data.role === 'po' && now - data.lastSeen < PARTICIPANT_TIMEOUT_MS
     );
     if (activePO) {
       showError(`Ya hay un PO activo en esta sesión: ${activePO[0]}`);
       return;
     }
+    
+    // MODIFICADO: Establecer Título de Sala por defecto al crear/unirse como PO
+    get(ref(db, `${team}/meta/roomTitle`)).then(snap => {
+        if (!snap.exists() || !snap.val()) {
+            set(ref(db, `${team}/meta/roomTitle`), team);
+        }
+    });
   }
 
   document.getElementById('name-input').classList.add('hidden');
@@ -262,11 +327,14 @@ window.confirmName = async function confirmName() {
     set(ref(db, `${team}/votes/${name}`), '');
   }
 
-  // Establecer onDisconnect para el PO
+  // Establecer onDisconnect para el usuario y el PO
+  onDisconnect(ref(db, `${team}/connections/${name}`)).remove();
+
   if (role === 'po') {
       onDisconnect(ref(db, `${team}/meta/roomTitle`)).cancel();
       onDisconnect(ref(db, `${team}/meta/timer`)).cancel();
       onDisconnect(ref(db, `${team}/meta/isAnonymousMode`)).cancel();
+      // El onDisconnect para activeRooms/poName se maneja en actualizarConexion
   }
 
   const roleText = { po: '👑 PO', member: '🎯 Team Member', spectator: '👀 Espectador' };
@@ -356,6 +424,7 @@ window.resetVotes = function () {
   document.getElementById('facilitation-alerts').innerHTML = '';
 }
 
+// MODIFICADO: Limpieza de participantes inactivos
 window.resetParticipantes = function () {
   get(ref(db, `${team}/connections`)).then(connSnap => {
     const connections = connSnap.val() || {};
@@ -363,7 +432,7 @@ window.resetParticipantes = function () {
     const activeUsers = {};
 
     for (const [user, data] of Object.entries(connections)) {
-      if (now - data.lastSeen < 35000) {
+      if (now - data.lastSeen < PARTICIPANT_TIMEOUT_MS) {
           activeUsers[user] = true;
       }
     }
@@ -384,13 +453,59 @@ window.resetParticipantes = function () {
         }
       }
 
-      update(ref(db), updates);
+      update(ref(db), updates).then(() => {
+          // Forzar una actualización de la metadata de la sala después de la limpieza
+          actualizarConexion(); 
+      });
+      
       set(ref(db, `${team}/meta/revealed`), false);
     });
   });
 }
 
 // 4. Lógica de Renderizado
+
+// NUEVA FUNCIÓN: Renderizar la lista de salas activas
+function renderActiveRooms(roomsData = {}) {
+    const listContainer = document.getElementById('active-rooms-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = ''; // Limpiar lista
+    let foundActiveRooms = false;
+
+    // Generar la lista de salas
+    Object.entries(roomsData).forEach(([roomName, roomMeta]) => {
+        // La sala está activa si su lastActive es reciente
+        if (roomMeta.lastActive && (Date.now() - roomMeta.lastActive < ROOM_TIMEOUT_MS)) {
+            foundActiveRooms = true;
+            const item = document.createElement('div');
+            item.className = 'room-item';
+            // Se usa la función global para unirse
+            item.onclick = () => selectTeam(roomName); 
+            
+            const nameSpan = document.createElement('p');
+            nameSpan.className = 'room-item-name';
+            nameSpan.textContent = roomName;
+            
+            const detailsDiv = document.createElement('p');
+            detailsDiv.className = 'room-item-details';
+            
+            const poName = roomMeta.poName && roomMeta.poName !== 'Desconectado' ? roomMeta.poName : 'N/A';
+            const memberCount = roomMeta.memberCount || 0;
+            
+            detailsDiv.innerHTML = `👑 PO: <b>${poName}</b> | 👥 Activos: <b>${memberCount}</b>`;
+
+            item.appendChild(nameSpan);
+            item.appendChild(detailsDiv);
+            listContainer.appendChild(item);
+        }
+    });
+
+    if (!foundActiveRooms) {
+       listContainer.innerHTML = '<p style="font-size: 1rem; color: #f0f0f0;">No hay salas activas. ¡Crea una!</p>';
+    }
+}
+
 
 // Renderizar Backlog
 function renderBacklog(backlog = {}) {
@@ -527,7 +642,7 @@ function updateVoteTable(votes = {}, isRevealed, connections = {}, isAnonymous =
 
   // 1. Filtrar y contar votantes válidos (Miembros y POs que no son espectadores)
   const activeParticipants = Object.entries(connections)
-      .filter(([user, data]) => data.role !== 'spectator' && Date.now() - data.lastSeen < 35000);
+      .filter(([user, data]) => data.role !== 'spectator' && Date.now() - data.lastSeen < PARTICIPANT_TIMEOUT_MS);
       
   const totalVoters = activeParticipants.length;
   
@@ -675,6 +790,15 @@ function updateVoteTable(votes = {}, isRevealed, connections = {}, isAnonymous =
 
 // 5. Listeners de Firebase
 
+// NUEVO LISTENER: Salas Activas
+function listenToActiveRooms() {
+    onValue(ref(db, `activeRooms`), (snapshot) => {
+        const rooms = snapshot.val() || {};
+        renderActiveRooms(rooms);
+    });
+}
+
+
 function listenToEverything() {
   
   // Listener del Temporizador
@@ -745,7 +869,7 @@ function listenToEverything() {
         updateVoteTable(currentVotes, revealed, allConnections, isAnonymous);
         // Actualizar la mesa después de obtener votos
         renderMesa(Object.entries(allConnections)
-          .filter(([_, data]) => Date.now() - data.lastSeen < 35000)
+          .filter(([_, data]) => Date.now() - data.lastSeen < PARTICIPANT_TIMEOUT_MS)
           .map(([nombre, data]) => ({ nombre, role: data.role, avatar: data.avatar, voted: currentVotes[nombre] && currentVotes[nombre] !== '' })),
           isAnonymous 
         );
@@ -774,7 +898,7 @@ function listenToEverything() {
       
       // Volver a renderizar mesa con el estado anónimo actualizado
       renderMesa(Object.entries(allConnections)
-          .filter(([_, data]) => Date.now() - data.lastSeen < 35000)
+          .filter(([_, data]) => Date.now() - data.lastSeen < PARTICIPANT_TIMEOUT_MS)
           .map(([nombre, data]) => ({ nombre, role: data.role, avatar: data.avatar, voted: currentVotes[nombre] && currentVotes[nombre] !== '' })), 
           isAnonymous
       );
@@ -786,13 +910,13 @@ function listenToEverything() {
     allConnections = conexiones;
     const now = Date.now();
     const activos = Object.entries(conexiones)
-      .filter(([_, data]) => now - data.lastSeen < 35000)
+      .filter(([_, data]) => now - data.lastSeen < PARTICIPANT_TIMEOUT_MS)
       .map(([nombre, data]) => ({ 
           nombre, 
           role: data.role, 
           avatar: data.avatar, 
           voted: currentVotes[nombre] && currentVotes[nombre] !== '', 
-          inactive: now - data.lastSeen > 30000 
+          inactive: now - data.lastSeen > PARTICIPANT_TIMEOUT_MS 
       }));
         
     get(ref(db, `${team}/meta/isAnonymousMode`)).then(snap => {
@@ -816,6 +940,12 @@ function listenToEverything() {
       if (title) {
           titleDisplay.textContent = `📝 Tema: ${title}`;
           titleDisplay.classList.remove('hidden');
+          
+          // Además, actualizar el input del PO si existe
+          const roomTitleInput = document.getElementById('room-title-input');
+          if (roomTitleInput && role === 'po') {
+              roomTitleInput.value = title;
+          }
       } else {
           titleDisplay.textContent = '📝 Tarea no seleccionada';
       }
@@ -1022,23 +1152,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 1500);
     
-    // 2. Javi 1
-    const text1 = "Bienvenid@, Soy Javi y te invito al planning poker, ¡elegí cualquier equipo!";
+    // 2. Javi 1 (Texto actualizado)
+    const text1 = "Bienvenid@, Soy Javi y te invito al planning poker, ¡ingresá o seleccioná una sala!";
     typewriterEffect('javi1-dialog', text1);
     
     // 3. Inicio del fondo de cartas
     startFallingCards();
     
-    // 4. Listeners de selección de equipo y rol
-    // Usamos funciones locales que llaman a las de navegación
-    document.getElementById('btn-desarrollo')?.addEventListener('click', () => selectTeam('desarrollo'));
-    document.getElementById('btn-produccion')?.addEventListener('click', () => selectTeam('produccion'));
-    document.getElementById('btn-otro')?.addEventListener('click', () => selectTeam('otro'));
+    // 4. Iniciar listener de salas activas
+    listenToActiveRooms();
+    
+    // 5. Listeners de selección de rol (los botones de equipo fueron reemplazados)
     document.getElementById('btn-po')?.addEventListener('click', () => selectRole('po'));
     document.getElementById('btn-member')?.addEventListener('click', () => selectRole('member'));
     document.getElementById('btn-spectator')?.addEventListener('click', () => selectRole('spectator'));
 
-    // 5. Listener de selección de avatar
+    // 6. Listener de selección de avatar
     const avatarSelector = document.getElementById('avatar-selector');
     if (avatarSelector) {
         document.querySelectorAll('.avatar-option').forEach(el => {
@@ -1052,10 +1181,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector(`.avatar-option[data-avatar="${selectedAvatar}"]`)?.classList.add('selected-avatar');
     }
     
-    // 6. Mantenimiento de conexión (se activa después de iniciar sesión)
+    // 7. Mantenimiento de conexión (se activa después de iniciar sesión)
     setInterval(actualizarConexion, 10000);
     
-    // 7. Listener del botón de ayuda (Modal Fibonacci)
+    // 8. Listener del botón de ayuda (Modal Fibonacci)
     const helpButton = document.getElementById('help-button');
     const imageModal = document.getElementById('image-modal');
     if(helpButton && imageModal) {
