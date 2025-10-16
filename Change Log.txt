@@ -1,4 +1,13 @@
 Change Log:
+---------------------------VERSION 2.3.7-----------------------------------------
+✨ Nuevas Características (Features)
+
+> Se agrego en la pantalla de inicio una RULETTE de seleccion.
+  Dicha ruleta puede ser vista con el icono de ruleta, al presionarlo se desplega el menu el cual permite agregar nombres a una ruleta la cual al azar luego de 3 segundos dictaminara un sorteado.
+  Feature originalmente propuesta para seleccionar entre varias personas y de forma aleatoria un trabajo X (como compartir pantalla en daily)
+  Cabe mencionar que de momento la ruleta funciona de forma local y no hace cruce de datos con los demas usuarios conectados a la web (en principio no deberia)
+
+
 ---------------------------VERSION 2.3.5------------------------------------------
 ✨ Nuevas Características (Features)
 
@@ -65,5 +74,6 @@ AGREGADOS:
 -Se agrego icono (favicon) a la pagina para mejorar la estetica de la misma en las pestanias del navegador
 
 -Ahora el PO, Espectador y Miembro se discriminan con logos distintos en la mesa con una CORONA, un par de OJOS y SILUETA respectivamente.
+
 
 
