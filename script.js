@@ -318,6 +318,13 @@ window.confirmName = async function confirmName() {
     });
   }
 
+  // Cleanup roulette when entering a room
+  if (typeof clearAllNames === 'function') {
+    clearAllNames();
+    document.getElementById('roulette-container')?.classList.remove('visible');
+    document.getElementById('roulette-toggle-btn')?.classList.add('hidden');
+  }
+
   document.getElementById('name-input').classList.add('hidden');
   document.getElementById('voting-container').classList.remove('hidden');
   document.getElementById('help-button').classList.remove('hidden');
@@ -1140,6 +1147,190 @@ function startPOTutorial(username) {
     window.nextTutorialStep();
 }
 
+// === ROULETTE FEATURE ===
+
+// --- State and Constants ---
+const ROULETTE_MAX_NAMES = 15;
+const rouletteColors = ["#ff6b6b", "#feca57", "#48dbfb", "#1dd1a1", "#f368e0", "#ff9f43", "#0abde3", "#10ac84", "#54a0ff", "#5f27cd", "#c8d6e5", "#576574", "#01a3a4", "#ee5253", "#2e86de"];
+let rouletteNames = [];
+let startAngle = 0;
+let arc = 0;
+let spinTimeout = null;
+let spinAngleStart = 0;
+let spinTime = 0;
+let spinTimeTotal = 0;
+let isSpinning = false;
+
+// --- Core Functions ---
+function drawRouletteWheel() {
+    const rouletteCanvas = document.getElementById('roulette-canvas');
+    if (!rouletteCanvas) return;
+    const rouletteCtx = rouletteCanvas.getContext('2d');
+    const outsideRadius = 110;
+    const textRadius = 85;
+    const insideRadius = 0;
+    const centerX = rouletteCanvas.width / 2;
+    const centerY = rouletteCanvas.height / 2;
+
+    rouletteCtx.clearRect(0, 0, rouletteCanvas.width, rouletteCanvas.height);
+    rouletteCtx.strokeStyle = "white";
+    rouletteCtx.lineWidth = 2;
+    
+    if (rouletteNames.length === 0) {
+        rouletteCtx.fillStyle = '#c8d6e5';
+        rouletteCtx.beginPath();
+        rouletteCtx.arc(centerX, centerY, outsideRadius, 0, 2 * Math.PI, false);
+        rouletteCtx.fill();
+        
+        rouletteCtx.fillStyle = "#576574";
+        rouletteCtx.font = 'bold 14px Poppins, sans-serif';
+        rouletteCtx.textAlign = 'center';
+        rouletteCtx.textBaseline = 'middle';
+        rouletteCtx.fillText("Añade nombres", centerX, centerY);
+        return;
+    }
+
+    arc = Math.PI / (rouletteNames.length / 2);
+
+    for (let i = 0; i < rouletteNames.length; i++) {
+        const angle = startAngle + i * arc;
+        rouletteCtx.fillStyle = rouletteColors[i % rouletteColors.length];
+
+        rouletteCtx.beginPath();
+        rouletteCtx.arc(centerX, centerY, outsideRadius, angle, angle + arc, false);
+        rouletteCtx.arc(centerX, centerY, insideRadius, angle + arc, angle, true);
+        rouletteCtx.stroke();
+        rouletteCtx.fill();
+
+        rouletteCtx.save();
+        rouletteCtx.fillStyle = "white";
+        rouletteCtx.shadowColor = "rgba(0,0,0,0.2)";
+        rouletteCtx.shadowBlur = 3;
+        rouletteCtx.font = 'bold 12px Poppins, sans-serif';
+        rouletteCtx.translate(centerX + Math.cos(angle + arc / 2) * textRadius,
+                              centerY + Math.sin(angle + arc / 2) * textRadius);
+        rouletteCtx.rotate(angle + arc / 2 + Math.PI / 2);
+        const text = rouletteNames[i];
+        rouletteCtx.fillText(text, -rouletteCtx.measureText(text).width / 2, 0);
+        rouletteCtx.restore();
+    }
+}
+
+function renderNameList() {
+    const nameListDiv = document.getElementById('roulette-name-list');
+    if(!nameListDiv) return;
+    nameListDiv.innerHTML = '';
+    rouletteNames.forEach((name, index) => {
+        const item = document.createElement('div');
+        item.className = 'roulette-name-item';
+        item.innerHTML = `<span>${name}</span><button data-index="${index}">❌</button>`;
+        nameListDiv.appendChild(item);
+    });
+}
+
+function addName() {
+    const nameInput = document.getElementById('roulette-name-input');
+    const name = nameInput.value.trim();
+    if (name && rouletteNames.length < ROULETTE_MAX_NAMES) {
+        if (!rouletteNames.includes(name)) {
+            rouletteNames.push(name);
+            nameInput.value = '';
+            renderNameList();
+            drawRouletteWheel();
+        }
+    }
+    nameInput.focus();
+}
+
+function removeName(index) {
+    rouletteNames.splice(index, 1);
+    renderNameList();
+    drawRouletteWheel();
+}
+
+function clearAllNames() {
+    rouletteNames = [];
+    renderNameList();
+    drawRouletteWheel();
+    const winnerDiv = document.getElementById('roulette-winner');
+    if(winnerDiv) winnerDiv.innerText = '';
+}
+
+function spin() {
+    if (isSpinning || rouletteNames.length < 2) return;
+    
+    isSpinning = true;
+    document.getElementById('btn-spin').disabled = true;
+    document.getElementById('roulette-winner').innerText = 'Girando...';
+    
+    spinAngleStart = Math.random() * 10 + 10;
+    spinTime = 0;
+    spinTimeTotal = 4500 + Math.random() * 500; // 2.5-3 seconds spin
+
+    rotateWheel();
+}
+
+function rotateWheel() {
+    spinTime += 20;
+    if (spinTime >= spinTimeTotal) {
+        stopRotateWheel();
+        return;
+    }
+    const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+    startAngle += (spinAngle * Math.PI / 180);
+    drawRouletteWheel();
+    spinTimeout = setTimeout(rotateWheel, 20);
+}
+
+function stopRotateWheel() {
+    clearTimeout(spinTimeout);
+    const rouletteCanvas = document.getElementById('roulette-canvas');
+    const rouletteCtx = rouletteCanvas.getContext('2d');
+    const degrees = startAngle * 180 / Math.PI + 90;
+    const arcd = arc * 180 / Math.PI;
+    const index = Math.floor((360 - degrees % 360) / arcd);
+    
+    rouletteCtx.save();
+    rouletteCtx.font = 'bold 20px Poppins, sans-serif';
+    const winner = rouletteNames[index];
+    document.getElementById('roulette-winner').innerText = `Ganador: ${winner}`;
+    rouletteCtx.restore();
+
+    isSpinning = false;
+    document.getElementById('btn-spin').disabled = false;
+}
+
+function easeOut(t, b, c, d) {
+    const ts = (t /= d) * t;
+    const tc = ts * t;
+    return b + c * (tc + -3 * ts + 3 * t);
+}
+
+function setupRouletteListeners() {
+    document.getElementById('roulette-toggle-btn').addEventListener('click', () => {
+        document.getElementById('roulette-container').classList.toggle('visible');
+    });
+
+    document.getElementById('btn-add-name').addEventListener('click', addName);
+    document.getElementById('roulette-name-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addName();
+        }
+    });
+
+    document.getElementById('roulette-name-list').addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            const index = e.target.dataset.index;
+            removeName(index);
+        }
+    });
+
+    document.getElementById('btn-spin').addEventListener('click', spin);
+    document.getElementById('btn-clear-names').addEventListener('click', clearAllNames);
+
+    drawRouletteWheel(); // Initial draw
+}
+
 // === Inicialización de la Aplicación (DOM Ready) ===
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1190,5 +1381,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if(helpButton && imageModal) {
         helpButton.addEventListener('click', () => { imageModal.classList.remove('hidden'); });
         imageModal.addEventListener('click', (event) => { if (event.target === imageModal) { imageModal.classList.add('hidden'); } });
+    }
+
+    // 9. Setup Roulette Listeners
+    if (document.getElementById('roulette-container')) {
+        setupRouletteListeners();
     }
 });
